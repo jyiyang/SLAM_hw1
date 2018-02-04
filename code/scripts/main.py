@@ -46,11 +46,7 @@ def init_particles_freespace(num_particles, occupancy_map):
 
     # initialize [x, y, theta] positions in world_frame for all particles
     # (in free space areas of the map)
-
-    """
-    TODO : Add your code here
-    """
-    w0_val = 1 / num_particles
+    w0_val = 1.0 / num_particles
     X_bar_init = np.zeros([500, 4])
 
     i = 0
