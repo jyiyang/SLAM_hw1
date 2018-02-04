@@ -48,11 +48,12 @@ class SensorModel:
         t = 0
         counter = 1
         # p = p0 + t*v
-
+        testx = []
+        testy = []
         while counter < 4000:
             t = t + 5
             counter = counter + 1
-            #p = p0 + t*v
+            p = p0 + t*v
             print p
             px_occu = math.floor((p[0,0]-5)/10.0)
             py_occu = math.floor((p[0,1]-5)/10.0)
@@ -61,7 +62,7 @@ class SensorModel:
             testy.append(py_occu)
             if occu_val > 0.1:
                 dist = np.array([10*(px_occu-1)+5-x[0],10*(py_occu-1)+5-x[1]])
-                return np.linalg.norm(dist)  
+                return np.linalg.norm(dist),testx,testy
 
         return -1
 
@@ -128,7 +129,7 @@ if __name__=='__main__':
     logfile = open(src_path_log, 'r')
 
     sensor_model = SensorModel(occupancy_map)
-    x = np.array([5000,1000,math.pi/2])
+    x = np.array([5000,1000,0])
     n = 90
     test,testx,testy = sensor_model.ray_casting(x,n)
     print sensor_model._map.shape
@@ -137,5 +138,9 @@ if __name__=='__main__':
     mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
     plt.ion();  plt.axis([0, 800, 0, 800]); 
     plt.draw()
+    plt.plot(testx,testy)
+    plt.show()
+
     plt.imshow(sensor_model._map, cmap='Greys');
     plt.pause(100)
+    
