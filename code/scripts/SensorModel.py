@@ -32,35 +32,38 @@ class SensorModel:
         """
         n: ray number from RIGHT to LEFT
         """
-        x_occu = math.floor(x[0]/10.0)
-        y_occu = math.floor(x[1]/10.0)
+        x_occu = math.floor((x[0]-5)/10.0)
+        y_occu = math.floor((x[1]-5)/10.0)
         theta = x[2]
-        phi = n*math.pi/180
-        T_r_l = np.matrix([[math.cos(phi),-math.sin(phi),25],[math.sin(phi),math.cos(phi),0],[0,0,1]])
-        T_w_r = np.matrix([[math.cos(theta),-math.sin(theta),x[0]],[math.sin(theta),math.cos(theta),x[1]],[0,0,1]])
-        T_w_l = T_r_l*T_w_r
-        v = np.array([T_w_l.item(0),T_w_l.item(3)])
-        p0 = np.array([T_w_l.item(2),T_w_l.item(5)])
+        phi = (n-90)*math.pi/180
+        R_r_l = np.matrix([[math.cos(phi),-math.sin(phi)],[math.sin(phi),math.cos(phi)]])       
+        R_w_r = np.matrix([[math.cos(theta),-math.sin(theta)],[math.sin(theta),math.cos(theta)]])
+        R_w_l = R_r_l*R_w_r
+        v = np.array([R_w_l.item(0),R_w_l.item(2)])
+        p0 = R_w_r*np.array([[25],[0]]) + np.array([[x[0]],[x[1]]])
+        print p0
+        p0 = np.transpose(p0)
+        print p0
+        print v
         t = 0
         counter = 1
         # p = p0 + t*v
-        testx = []
-        testy = []
-        prob = []
+
         while counter < 4000:
-            t = t + 1
+            t = t + 5
             counter = counter + 1
-            p = p0 + t*v
+            #p = p0 + t*v
             print p
-            px_occu = math.floor(p[0]/10.0)
-            py_occu = math.floor(p[1]/10.0)
+            px_occu = math.floor((p[0,0]-5)/10.0)
+            py_occu = math.floor((p[0,1]-5)/10.0)
             occu_val = self._map[py_occu,px_occu]
             testx.append(px_occu)
             testy.append(py_occu)
             if occu_val > 0.1:
                 dist = np.array([10*(px_occu-1)+5-x[0],10*(py_occu-1)+5-x[1]])
-                return np.linalg.norm(dist), testx, testy   
+                return np.linalg.norm(dist)  
 
+        return -1
 
 
 
@@ -81,10 +84,39 @@ class SensorModel:
         """
         
         q = 1;
-        #for i in range(1,181)
+        for i in range(1,181):
+            z_t1 = z_t1_arr[i-1]
+            z_k_opt = self.ray_casting(x_t1,i)
+            if z_k_opt == -1:
+                continue
+            # 1. Hit model
+            if z_t1 >= 0 and z_t1 <= self._z_max:
+                p_hit = math.exp(-0.5*((z_t1-z_k_opt)**2)/(self._sigma_hit**2))/math.sqrt(2*math.pi*(self._sigma_hit**2))
+            else:
+                p_hit = 0
+            
+            # 2. Unexpected objects
+            if z_t1 >= 0 and z_t1 <= z_k_opt:
+                p_short = self._lambda_short*math.exp(-self._lambda_short*z_t1)/(1-math.exp(-self._lambda_short*z_k_opt))
+            else:
+                p_short = 0
 
+            # 3. Failures
+            if z_t1 == self._z_max:
+                p_max = 1
+            else:
+                p_max = 0
 
+            #4. Random Measurements
+            if z_t1 >= 0 and z_t1 <= self._z_max:
+                p_rand = 1/self._z_max
+            else:
+                p_rand = 0;
 
+            p_total = np.array([[p_hit],[p_short],[p_max],[p_rand]])
+            p_total = self._weight*p_total
+            q = q*p
+            
         return q    
  
 if __name__=='__main__':
@@ -97,17 +129,13 @@ if __name__=='__main__':
 
     sensor_model = SensorModel(occupancy_map)
     x = np.array([5000,1000,math.pi/2])
-    n = 1
+    n = 90
     test,testx,testy = sensor_model.ray_casting(x,n)
-    print test
-    print testx
-    print testy
+    print sensor_model._map.shape
     fig = plt.figure()
-    # plt.switch_backend('TkAgg')
+    plt.switch_backend('TkAgg')
     mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
-    #plt.ion();  plt.axis([0, 800, 0, 800]); 
-    #plt.draw()
-    plt.plot(testx,testy);
-    #plt.imshow(sensor_model._map, cmap='Greys');
-    plt.show()
-    #plt.pause(100)
+    plt.ion();  plt.axis([0, 800, 0, 800]); 
+    plt.draw()
+    plt.imshow(sensor_model._map, cmap='Greys');
+    plt.pause(100)
