@@ -18,13 +18,10 @@ class SensorModel:
 
     def __init__(self, occupancy_map):
 
-        """
-        TODO : Initialize Sensor Model parameters here
-        """
         self._sigma_hit = 0.1
         self._lambda_short = 0.1
         self._z_max = 8183;
-        self._weight = np.array([0.1,0.2,0.3,0.4])
+        self._weight = [0.1,0.2,0.3,0.4]
         self._map = occupancy_map
         # _weight is for weighted average of posterior
     
@@ -41,37 +38,32 @@ class SensorModel:
         R_w_l = R_r_l*R_w_r
         v = np.array([R_w_l.item(0),R_w_l.item(2)])
         p0 = R_w_r*np.array([[25],[0]]) + np.array([[x[0]],[x[1]]])
-        print p0
         p0 = np.transpose(p0)
-        print p0
-        print v
         t = 0
         counter = 1
         # p = p0 + t*v
-        testx = []
-        testy = []
-        while counter < 4000:
+        # testx = []
+        # testy = []
+        while counter < 100:
             t = t + 5
             counter = counter + 1
             p = p0 + t*v
-            print p
+            #print p
             px_occu = math.floor((p[0,0]-5)/10.0)
             py_occu = math.floor((p[0,1]-5)/10.0)
-            occu_val = self._map[py_occu,px_occu]
-            testx.append(px_occu)
-            testy.append(py_occu)
+            # print px_occu
+            # print py_occu
+            if py_occu < 800 and px_occu < 800:
+                occu_val = self._map[py_occu,px_occu]
+            else:
+                return self._z_max + 1
+            # testx.append(px_occu)
+            # testy.append(py_occu)
             if occu_val > 0.1:
                 dist = np.array([10*(px_occu-1)+5-x[0],10*(py_occu-1)+5-x[1]])
-                return np.linalg.norm(dist),testx,testy
+                return np.linalg.norm(dist)#,testx,testy
 
         return -1
-
-
-
-
-
-
-
 
     def beam_range_finder_model(self, z_t1_arr, x_t1):
         """
@@ -79,13 +71,8 @@ class SensorModel:
         param[in] x_t1 : particle state belief [x, y, theta] at time t [world_frame]
         param[out] prob_zt1 : likelihood of a range scan zt1 at time t
         """
-        
-        """
-        TODO : Add your code here
-        """
-        
         q = 1;
-        for i in range(1,181):
+        for i in range(1,5,181):
             z_t1 = z_t1_arr[i-1]
             z_k_opt = self.ray_casting(x_t1,i)
             if z_k_opt == -1:
@@ -114,33 +101,35 @@ class SensorModel:
             else:
                 p_rand = 0;
 
-            p_total = np.array([[p_hit],[p_short],[p_max],[p_rand]])
-            p_total = self._weight*p_total
-            q = q*p
+   
+            p_total = self._weight[0]*p_hit + self._weight[1]*p_short + self._weight[2]*p_max + self._weight[3]*p_rand
+            
+            q = q*p_total
             
         return q    
  
 if __name__=='__main__':
-    src_path_map = '../data/map/wean.dat'
-    src_path_log = '../data/log/robotdata1.log'
+    # src_path_map = '../data/map/wean.dat'
+    # src_path_log = '../data/log/robotdata1.log'
 
-    map_obj = MapReader(src_path_map)
-    occupancy_map = map_obj.get_map() 
-    logfile = open(src_path_log, 'r')
+    # map_obj = MapReader(src_path_map)
+    # occupancy_map = map_obj.get_map() 
+    # logfile = open(src_path_log, 'r')
 
-    sensor_model = SensorModel(occupancy_map)
-    x = np.array([5000,1000,0])
-    n = 90
-    test,testx,testy = sensor_model.ray_casting(x,n)
-    print sensor_model._map.shape
-    fig = plt.figure()
-    plt.switch_backend('TkAgg')
-    mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
-    plt.ion();  plt.axis([0, 800, 0, 800]); 
-    plt.draw()
-    plt.plot(testx,testy)
-    plt.show()
+    # sensor_model = SensorModel(occupancy_map)
+    # x = np.array([5000,1000,0])
+    # n = 90
+    # test,testx,testy = sensor_model.ray_casting(x,n)
+    # print sensor_model._map.shape
+    # fig = plt.figure()
+    # plt.switch_backend('TkAgg')
+    # mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
+    # plt.ion();  plt.axis([0, 800, 0, 800]); 
+    # plt.draw()
+    # plt.plot(testx,testy)
+    # plt.show()
 
-    plt.imshow(sensor_model._map, cmap='Greys');
-    plt.pause(100)
+    # plt.imshow(sensor_model._map, cmap='Greys');
+    # plt.pause(100)
+    pass
     

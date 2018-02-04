@@ -22,6 +22,7 @@ class Resampling:
         param[in] X_bar : [num_particles x 4] sized array containing [x, y, theta, wt] values for all particles
         param[out] X_bar_resampled : [num_particles x 4] sized array containing [x, y, theta, wt] values for resampled set of particles
         """
+        self.normalize(X_bar)
         num_particles = np.shape(X_bar)[0]
         X_bar_resampled = np.zeros([num_particles, 4])
         for i in xrange(num_particles):
@@ -36,14 +37,16 @@ class Resampling:
         param[in] X_bar : [num_particles x 4] sized array containing [x, y, theta, wt] values for all particles
         param[out] X_bar_resampled : [num_particles x 4] sized array containing [x, y, theta, wt] values for resampled set of particles
         """
+        self.normalize(X_bar)
+
         num_particles = np.shape(X_bar)[0]
         X_bar_resampled = np.zeros([num_particles, 4])
 
         r = (1.0/num_particles) * np.random.rand()
         c = X_bar[0, 3]
 
-        i = 1
-        for m in xrange(1, num_particles):
+        i = 0
+        for m in xrange(num_particles):
             U = r + (m - 1) * (1.0/num_particles)
             while U > c:
                 i += 1
@@ -51,6 +54,12 @@ class Resampling:
             X_bar_resampled[m, :] = X_bar[i, :]
 
         return X_bar_resampled
+
+    def normalize(self, X_bar):
+        normalized_factor = np.sum(X_bar[:, 3])
+        num_particles = np.shape(X_bar)[0]
+        for i in xrange(num_particles):
+            X_bar[i, 3] = X_bar[i, 3] / normalized_factor
 
 def init_particles_freespace(num_particles, occupancy_map):
 
@@ -86,4 +95,5 @@ def testSampler():
     print X_bar_resampled
 
 if __name__ == "__main__":
-    testSampler()
+    # testSampler()
+    pass
