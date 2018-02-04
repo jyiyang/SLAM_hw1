@@ -22,7 +22,7 @@ class Resampling:
         param[in] X_bar : [num_particles x 4] sized array containing [x, y, theta, wt] values for all particles
         param[out] X_bar_resampled : [num_particles x 4] sized array containing [x, y, theta, wt] values for resampled set of particles
         """
-        num_particles = np.shape(X_bar)[0];
+        num_particles = np.shape(X_bar)[0]
         X_bar_resampled = np.zeros([num_particles, 4])
         for i in xrange(num_particles):
             x_bar_index = np.random.choice(num_particles, p=X_bar[:, 3])
@@ -36,10 +36,19 @@ class Resampling:
         param[in] X_bar : [num_particles x 4] sized array containing [x, y, theta, wt] values for all particles
         param[out] X_bar_resampled : [num_particles x 4] sized array containing [x, y, theta, wt] values for resampled set of particles
         """
+        num_particles = np.shape(X_bar)[0]
+        X_bar_resampled = np.zeros([num_particles, 4])
 
-        """
-        TODO : Add your code here
-        """
+        r = (1.0/num_particles) * np.random.rand()
+        c = X_bar[0, 3]
+
+        i = 1
+        for m in xrange(1, num_particles):
+            U = r + (m - 1) * (1.0/num_particles)
+            while U > c:
+                i += 1
+                c += X_bar[i, 3]
+            X_bar_resampled[m, :] = X_bar[i, :]
 
         return X_bar_resampled
 
@@ -72,7 +81,8 @@ def testSampler():
 
     X_bar = init_particles_freespace(num_particles, occupancy_map)
     resampler = Resampling()
-    X_bar_resampled = resampler.multinomial_sampler(X_bar)
+    # X_bar_resampled = resampler.multinomial_sampler(X_bar)
+    X_bar_resampled = resampler.low_variance_sampler(X_bar)
     print X_bar_resampled
 
 if __name__ == "__main__":
