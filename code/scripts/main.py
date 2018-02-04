@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import pdb
+import math
 
 from MapReader import MapReader
 from MotionModel import MotionModel
@@ -49,6 +50,20 @@ def init_particles_freespace(num_particles, occupancy_map):
     """
     TODO : Add your code here
     """
+    w0_val = 1 / num_particles
+    X_bar_init = np.zeros([500, 4])
+
+    i = 0
+    while i < num_particles:
+        y0_val = np.random.uniform(0, 7000)
+        x0_val = np.random.uniform(3000, 7000)
+        theta0_val = np.random.uniform(-3.1415, 3.1415)
+
+        occupied = occupancy_map[math.floor(y0_val / 10.0), math.floor(x0_val / 10.0)]
+        # print type(occupied)
+        if math.fabs(occupied) < 1e-3:
+            X_bar_init[i, :] = np.array([x0_val, y0_val, theta0_val, w0_val])
+            i += 1
 
     return X_bar_init
 
@@ -85,7 +100,8 @@ def main():
     resampler = Resampling()
 
     num_particles = 500
-    X_bar = init_particles_random(num_particles, occupancy_map)
+    # print occupancy_map
+    X_bar = init_particles_freespace(num_particles, occupancy_map)
 
     vis_flag = 1
     odom = np.zeros((2218, 2))
