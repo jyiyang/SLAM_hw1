@@ -24,7 +24,13 @@ class SensorModel:
         self._weight = [0.1,0.2,0.3,0.4]
         self._map = occupancy_map
         # _weight is for weighted average of posterior
-    
+
+    def visualize_ray(self,x,y):
+        mng = plt.get_current_fig_manager();
+        plt.plot(x,y)
+        plt.show()
+
+
     def ray_casting(self, x, n):
         """
         n: ray number from RIGHT to LEFT
@@ -33,7 +39,7 @@ class SensorModel:
         y_occu = math.floor((x[1]-5)/10.0)
         theta = x[2]
         phi = (n-90)*math.pi/180
-        R_r_l = np.matrix([[math.cos(phi),-math.sin(phi)],[math.sin(phi),math.cos(phi)]])       
+        R_r_l = np.matrix([[math.cos(phi),-math.sin(phi)],[math.sin(phi),math.cos(phi)]])
         R_w_r = np.matrix([[math.cos(theta),-math.sin(theta)],[math.sin(theta),math.cos(theta)]])
         R_w_l = R_r_l*R_w_r
         v = np.array([R_w_l.item(0),R_w_l.item(2)])
@@ -42,8 +48,8 @@ class SensorModel:
         t = 0
         counter = 1
         # p = p0 + t*v
-        # testx = []
-        # testy = []
+        testx = []
+        testy = []
         while counter < 100:
             t = t + 5
             counter = counter + 1
@@ -57,11 +63,11 @@ class SensorModel:
                 occu_val = self._map[py_occu,px_occu]
             else:
                 return self._z_max + 1
-            # testx.append(px_occu)
-            # testy.append(py_occu)
+            testx.append(px_occu)
+            testy.append(py_occu)
             if occu_val > 0.1:
                 dist = np.array([10*(px_occu-1)+5-x[0],10*(py_occu-1)+5-x[1]])
-                return np.linalg.norm(dist)#,testx,testy
+                return np.linalg.norm(dist),testx,testy
 
         return -1
 
@@ -82,7 +88,7 @@ class SensorModel:
                 p_hit = math.exp(-0.5*((z_t1-z_k_opt)**2)/(self._sigma_hit**2))/math.sqrt(2*math.pi*(self._sigma_hit**2))
             else:
                 p_hit = 0
-            
+
             # 2. Unexpected objects
             if z_t1 >= 0 and z_t1 <= z_k_opt:
                 p_short = self._lambda_short*math.exp(-self._lambda_short*z_t1)/(1-math.exp(-self._lambda_short*z_k_opt))
@@ -101,35 +107,39 @@ class SensorModel:
             else:
                 p_rand = 0;
 
-   
+
             p_total = self._weight[0]*p_hit + self._weight[1]*p_short + self._weight[2]*p_max + self._weight[3]*p_rand
-            
+
             q = q*p_total
-            
-        return q    
- 
+
+        return q
+
 if __name__=='__main__':
-    # src_path_map = '../data/map/wean.dat'
-    # src_path_log = '../data/log/robotdata1.log'
+    src_path_map = '../data/map/wean.dat'
+    src_path_log = '../data/log/robotdata1.log'
 
-    # map_obj = MapReader(src_path_map)
-    # occupancy_map = map_obj.get_map() 
-    # logfile = open(src_path_log, 'r')
-
-    # sensor_model = SensorModel(occupancy_map)
-    # x = np.array([5000,1000,0])
-    # n = 90
-    # test,testx,testy = sensor_model.ray_casting(x,n)
+    map_obj = MapReader(src_path_map)
+    occupancy_map = map_obj.get_map()
+    logfile = open(src_path_log, 'r')
+    fig = plt.figure()
+    sensor_model = SensorModel(occupancy_map)
+    x = np.array([5000,1000,0])
+    x_l = [];
+    y_l = [];
+    for i in range(1,5,16):
+        print i
+        test,testx,testy = sensor_model.ray_casting(x,i)
+        x_l.extend(testx)
+        y_l.extend(testy)
     # print sensor_model._map.shape
-    # fig = plt.figure()
-    # plt.switch_backend('TkAgg')
-    # mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
-    # plt.ion();  plt.axis([0, 800, 0, 800]); 
-    # plt.draw()
-    # plt.plot(testx,testy)
-    # plt.show()
+    fig = plt.figure()
+    plt.switch_backend('TkAgg')
+    mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
+    plt.ion();  plt.axis([0, 800, 0, 800]);
+    plt.draw()
+    plt.plot(testx,testy)
+    plt.show()
 
-    # plt.imshow(sensor_model._map, cmap='Greys');
-    # plt.pause(100)
+    plt.imshow(sensor_model._map, cmap='Greys');
+    plt.pause(100)
     pass
-    
