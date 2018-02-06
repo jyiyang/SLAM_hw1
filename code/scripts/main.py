@@ -69,6 +69,12 @@ def visualize_odometry(odom):
     plt.plot(odom[:, 0], odom[:, 1])
     plt.show()
 
+
+
+
+def test_ray():
+    pass
+
 def main():
 
     """
