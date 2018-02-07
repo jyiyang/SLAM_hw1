@@ -35,8 +35,7 @@ class SensorModel:
         """
         n: ray number from RIGHT to LEFT
         """
-        x_occu = math.floor((x[0]-5)/10.0)
-        y_occu = math.floor((x[1]-5)/10.0)
+        
         theta = x[2]
         phi = (n-90)*math.pi/180
         R_r_l = np.matrix([[math.cos(phi),-math.sin(phi)],[math.sin(phi),math.cos(phi)]])
@@ -48,29 +47,31 @@ class SensorModel:
         t = 0
         counter = 1
         # p = p0 + t*v
-        testx = [math.floor((p0[0,0]-5)/10.0)]
-        testy = [math.floor((p0[0,1]-5)/10.0)]
-        while counter < 4000:
-            t = t + 5
+        testx = [math.ceil(p0[0,0]/10.0)]
+        testy = [math.ceil(p0[0,1]/10.0)]
+        while counter < 8000:
+            t = t + 3
             counter = counter + 1
             p = p0 + t*v
             #print p
-            px_occu = math.floor((p[0,0]-5)/10.0)
-            py_occu = math.floor((p[0,1]-5)/10.0)
+            px_occu = math.ceil(p[0,0]/10.0)
+            py_occu = math.ceil(p[0,1]/10.0)
             # print px_occu
             # print py_occu
-            if py_occu < 800 and px_occu < 800:
+            if py_occu < 800 and px_occu < 800 and py_occu > 0 and px_occu > 0:
                 occu_val = self._map[py_occu,px_occu]
             else:
-                return self._z_max
+                testx.append(px_occu)
+                testy.append(py_occu)
+                return self._z_max,testx,testy
             
             if occu_val > 0.1:
                 dist = np.array([10*(px_occu-1)+5-x[0],10*(py_occu-1)+5-x[1]])
                 testx.append(px_occu)
                 testy.append(py_occu)
-                return np.linalg.norm(dist)#,testx,testy
+                return np.linalg.norm(dist),testx,testy
 
-        return -1
+        return -1,[],[]
 
     def beam_range_finder_model(self, z_t1_arr, x_t1):
         """
@@ -80,13 +81,20 @@ class SensorModel:
         """
         q = 1;
         #q = 0;
-        for i in xrange(1,181,10):
+        x_l = [];
+        y_l = [];
+
+        for i in xrange(1,181,5):
             z_t1 = z_t1_arr[i-1]
-            z_k_opt = self.ray_casting(x_t1,i)
-            print "data: ",z_t1
+            z_k_opt,x_ray,y_ray = self.ray_casting(x_t1,i-1)
+            
+            # print "data: ",z_t1
             print "measure: ",z_k_opt
             if z_k_opt == -1:
                 continue
+
+            x_l.extend(x_ray)
+            y_l.extend(y_ray)
             # 1. Hit model
             if z_t1 >= 0 and z_t1 <= self._z_max:
                 p_hit = math.exp(-0.5*((z_t1-z_k_opt)**2)/(self._sigma_hit**2))/math.sqrt(2*math.pi*(self._sigma_hit**2))
@@ -123,7 +131,7 @@ class SensorModel:
             # print p_total
             #q = q + math.log(p_total)
             q = q*p_total
-        return q
+        return q,x_l,y_l
 
 if __name__=='__main__':
     src_path_map = '../data/map/wean.dat'
@@ -140,6 +148,7 @@ if __name__=='__main__':
     for i in range(1,181,10):
         print "Ray num: ", i
         test,testx,testy = sensor_model.ray_casting(x,i)
+        print "d: ", test
         x_l.extend(testx)
         y_l.extend(testy)
         print test
