@@ -21,7 +21,7 @@ class SensorModel:
         self._sigma_hit = 50
         self._lambda_short = 0.1
         self._z_max = 8183;
-        self._weight = [0.6,0.2,0.1,0.1]
+        self._weight = [0.6,0.3,0.05,0.05]
         self._map = occupancy_map
         # _weight is for weighted average of posterior
 
@@ -79,8 +79,8 @@ class SensorModel:
         param[in] x_t1 : particle state belief [x, y, theta] at time t [world_frame]
         param[out] prob_zt1 : likelihood of a range scan zt1 at time t
         """
-        q = 1;
-        #q = 0;
+        # q = 1;
+        q = 0;
         x_l = [];
         y_l = [];
 
@@ -89,7 +89,7 @@ class SensorModel:
             z_k_opt,x_ray,y_ray = self.ray_casting(x_t1,i-1)
             
             # print "data: ",z_t1
-            print "measure: ",z_k_opt
+            # print "measure: ",z_k_opt
             if z_k_opt == -1:
                 continue
 
@@ -129,8 +129,9 @@ class SensorModel:
 
             p_total = self._weight[0]*p_hit + self._weight[1]*p_short + self._weight[2]*p_max + self._weight[3]*p_rand
             # print p_total
-            #q = q + math.log(p_total)
-            q = q*p_total
+            q = q + math.log(p_total)
+            #q = q*p_total
+            # print q
         return q,x_l,y_l
 
 if __name__=='__main__':
