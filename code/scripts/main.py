@@ -146,7 +146,6 @@ def main():
         u_t1 = odometry_robot
         odom[numSteps, :] = u_t0[0:2]
         numSteps += 1
-        # print u_t1
         for m in xrange(0, num_particles):
 
             """
