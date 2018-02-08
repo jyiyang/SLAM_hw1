@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import time
+import pickle
 from matplotlib import pyplot as plt
 from matplotlib import figure as fig
 
@@ -38,13 +39,13 @@ class SensorModel:
     def computeTable(self):
         # for i in xrange(self.)
         # self.ray_casting
-        for x in xrange(500, 501):
-            for y in xrange(100, 101):
+        for x in xrange(300, 700):
+            for y in xrange(0, 700):
                 if math.fabs(self._map[y, x]) < 0.001:
                     for theta in xrange(len(self._table[x][y])):
                         self._table[x][y][theta] = self.ray_casting_table(x*10, y*10, 2*theta*radi)
-                        print "Map value for location at x = ", scale*x, " y = ", scale*y, "theta = ", 2*theta*radi
-                        print self._table[x][y][theta]
+                        # print "Map value for location at x = ", scale*x, " y = ", scale*y, "theta = ", 2*theta*radi
+                        # print self._table[x][y][theta]
             print "Currently in outer loop: ", x
 
     def visualize_ray(self,x,y):
@@ -89,7 +90,7 @@ class SensorModel:
             py_occu = math.ceil(p[1] / 10.0)
             # print px_occu
             # print py_occu
-            if py_occu < 800 and px_occu < 800:
+            if py_occu < 800 and px_occu < 800 and py_occu >= 0 and px_occu >= 0:
                 occu_val = self._map[py_occu, px_occu]
             else:
                 # print "==============gg============"
@@ -213,6 +214,8 @@ if __name__=='__main__':
     # fig = plt.figure()
     sensor_model = SensorModel(occupancy_map)
     sensor_model.computeTable()
+    with open('ray_cast_table.dat', 'wb') as fp:
+        pickle.dump(sensor_model._table, fp)
 
     # fig = plt.figure()
     # mng = plt.get_current_fig_manager();  # mng.resize(*mng.window.maxsize())
