@@ -42,9 +42,9 @@ class SensorModel:
             for y in xrange(100, 101):
                 if math.fabs(self._map[y, x]) < 0.001:
                     for theta in xrange(len(self._table[x][y])):
-                        res = self.ray_casting_table(x*10, y*10, 2*theta*radi)
+                        self._table[x][y][theta] = self.ray_casting_table(x*10, y*10, 2*theta*radi)
                         print "Map value for location at x = ", scale*x, " y = ", scale*y, "theta = ", 2*theta*radi
-                        print res
+                        print self._table[x][y][theta]
             print "Currently in outer loop: ", x
 
     def visualize_ray(self,x,y):
@@ -85,14 +85,17 @@ class SensorModel:
             # print p
             # print p[0, 0]
             # print p[0, 1]
-            px_occu = (p[0]-5.0) / 10.0
-            py_occu = (p[1]-5.0) / 10.0
+            px_occu = math.ceil(p[0] / 10.0)
+            py_occu = math.ceil(p[1] / 10.0)
             # print px_occu
             # print py_occu
             if py_occu < 800 and px_occu < 800:
                 occu_val = self._map[py_occu, px_occu]
             else:
-                return self._z_max
+                # print "==============gg============"
+                # testx.append(px_occu)
+                # testy.append(py_occu)
+                return self._z_max#,testx,testy
 
             if occu_val > 0.1:
                 dist = np.array([10*(px_occu-1)+5-x,10*(py_occu-1)+5-y])
@@ -102,8 +105,7 @@ class SensorModel:
                 # print counter
                 # print px_occu, py_occu
                 return np.linalg.norm(dist)#,testx,testy
-
-        return -1
+        return -1#,[],[]
 
     def ray_casting(self, x, n):
         """
