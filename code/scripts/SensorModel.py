@@ -2,6 +2,7 @@ import numpy as np
 import math
 import time
 import pickle
+import time
 from matplotlib import pyplot as plt
 from matplotlib import figure as fig
 
@@ -47,6 +48,14 @@ class SensorModel:
                         # print "Map value for location at x = ", scale*x, " y = ", scale*y, "theta = ", 2*theta*radi
                         # print self._table[x][y][theta]
             print "Currently in outer loop: ", x
+
+    def readTable(self):
+        print "Now reading the table from file..."
+        start = time.time()
+        with open("ray_cast_table.dat", "rb") as fp:
+            self._table = pickle.load(fp)
+        end = time.time()
+        print "Finished reading ray casting table in ", end - start, " seconds."
 
     def visualize_ray(self,x,y):
         mng = plt.get_current_fig_manager();
@@ -152,6 +161,9 @@ class SensorModel:
 
         return -1,[],[]
 
+    def get_range_from_table(self, x, n):
+        return
+
     def beam_range_finder_model(self, z_t1_arr, x_t1):
         """
         param[in] z_t1_arr : laser range readings [array of 180 values] at time t
@@ -213,9 +225,14 @@ if __name__=='__main__':
     # logfile = open(src_path_log, 'r')
     # fig = plt.figure()
     sensor_model = SensorModel(occupancy_map)
-    sensor_model.computeTable()
-    with open('ray_cast_table.dat', 'wb') as fp:
-        pickle.dump(sensor_model._table, fp)
+
+    computeTable = 0
+    if computeTable:
+        sensor_model.computeTable()
+        with open('ray_cast_table.dat', 'wb') as fp:
+            pickle.dump(sensor_model._table, fp)
+    else:
+        sensor_model.readTable()
 
     # fig = plt.figure()
     # mng = plt.get_current_fig_manager();  # mng.resize(*mng.window.maxsize())
