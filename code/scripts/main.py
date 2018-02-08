@@ -3,6 +3,7 @@ import multiprocessing as mp
 import sys
 import pdb
 import math
+import pickle
 
 from MapReader import MapReader
 from MotionModel import MotionModel
@@ -80,7 +81,7 @@ def visualize_ray(x,y):
 
 
 
-def main():
+def main(mode):
 
     """
     Description of variables used
@@ -104,6 +105,13 @@ def main():
 
     motion_model = MotionModel()
     sensor_model = SensorModel(occupancy_map)
+    if mode == 0:
+        sensor_model.readTable()
+    elif mode == 1:
+        pass
+    elif mode == 2:
+        sensor_model.computeTable()
+
     resampler = Resampling()
 
     num_particles = 500
@@ -406,6 +414,11 @@ def parallel_main():
     visualize_odometry(odom)
 
 if __name__=="__main__":
-    main()
+    # To run the program with different modes:
+    # 0: read a map
+    # 1: do real time ray casting
+    # 2: to compute and store a map
+    mode = int(sys.argv[1])
+    main(mode)
     #test()
     # parallel_main()

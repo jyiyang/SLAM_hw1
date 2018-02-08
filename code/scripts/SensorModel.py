@@ -48,6 +48,8 @@ class SensorModel:
                         # print "Map value for location at x = ", scale*x, " y = ", scale*y, "theta = ", 2*theta*radi
                         # print self._table[x][y][theta]
             print "Currently in outer loop: ", x
+        with open('ray_cast_table.dat', 'wb') as fp:
+            pickle.dump(self._table, fp)
 
     def readTable(self):
         print "Now reading the table from file..."
@@ -158,17 +160,28 @@ class SensorModel:
 
         return -1,[],[]
 
+    def norm_angle(self, angle):
+    	"""normalize an angle to be within 0 to 2*pi"""
+
+    	while (angle >= 2*math.pi):
+    		angle -= 2*math.pi
+    	while (angle < 0):
+    		angle += 2*math.pi
+
+    	return angle
+
     def get_range_from_table(self, x, n):
         theta = x[2]
         phi = (n-90)*math.pi/180
-        R_r_l = np.matrix([[math.cos(phi),-math.sin(phi)],[math.sin(phi),math.cos(phi)]])
+        # R_r_l = np.matrix([[math.cos(phi),-math.sin(phi)],[math.sin(phi),math.cos(phi)]])
         R_w_r = np.matrix([[math.cos(theta),-math.sin(theta)],[math.sin(theta),math.cos(theta)]])
-        R_w_l = R_r_l*R_w_r
-        v = np.array([R_w_l.item(0),R_w_l.item(2)])
+        # R_w_l = R_r_l*R_w_r
+        # v = np.array([R_w_l.item(0),R_w_l.item(2)])
         p0 = R_w_r*np.array([[25],[0]]) + np.array([[x[0]],[x[1]]])
         p0 = np.transpose(p0)
 
-        angle_ind = int(math.ceil((theta + phi + math.pi) * 180 / math.pi / 2))
+        angle = self.norm_angle(theta + phi)
+        angle_ind = int(math.ceil((angle) * 180.0 / math.pi / 2.0)) - 1
         x_ind = int(math.ceil(p0[0,0]/10.0))
         y_ind = int(math.ceil(p0[0,1]/10.0))
 
