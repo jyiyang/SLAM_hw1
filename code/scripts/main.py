@@ -163,7 +163,8 @@ def main():
             """
             if (meas_type == "L"):
                 z_t = ranges
-                w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t, x_t1)
+                # w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t, x_t1)
+                w_t = sensor_model.beam_range_finder_model(z_t, x_t1)
                 # w_t = 1/num_particles
                 X_bar_new[m,:] = np.hstack((x_t1, w_t))
             else:
@@ -179,8 +180,8 @@ def main():
 
         if vis_flag:
             visualize_timestep(X_bar, time_idx)
-            
-            
+
+
 
     visualize_odometry(odom)
 
@@ -273,7 +274,7 @@ def test():
                 ray_flag = 1
                 z_t = ranges
                 w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t, x_t1)
-                
+
                 # w_t = 1/num_particles
                 X_bar_new[m,:] = np.hstack((x_t1, w_t))
             else:
@@ -306,7 +307,7 @@ def motion_sensor_model(u_t0, u_t1, X_bar, m, meas_type, ranges,  motion_model, 
         result = np.hstack((x_t1, X_bar[m,3]))
     output.put((m,result))
 
-   
+
 def parallel_main():
     """
     Description of variables used
@@ -384,7 +385,7 @@ def parallel_main():
 
         for p in processes:
             p.join()
-        
+
         results = [output.get() for p in processes]
         results = [r[1] for r in results]
         for m in range(0,num_particles):
@@ -399,8 +400,8 @@ def parallel_main():
 
         if vis_flag:
             visualize_timestep(X_bar, time_idx)
-            
-            
+
+
 
     visualize_odometry(odom)
 
