@@ -42,9 +42,9 @@ class SensorModel:
             for y in xrange(100, 101):
                 if math.fabs(self._map[y, x]) < 0.001:
                     for theta in xrange(len(self._table[x][y])):
-                        self._table[x][y][theta] = self.ray_casting_table([x*10, y*10], 2*theta*radi)
+                        res = self.ray_casting_table(x*10, y*10, 2*theta*radi)
                         print "Map value for location at x = ", scale*x, " y = ", scale*y, "theta = ", 2*theta*radi
-                        print self._table[x][y][theta]
+                        print res
             print "Currently in outer loop: ", x
 
     def visualize_ray(self,x,y):
@@ -52,7 +52,7 @@ class SensorModel:
         plt.plot(x,y)
         plt.show()
 
-    def ray_casting_table(self, x, theta):
+    def ray_casting_table(self, x, y, theta):
         """
         n: ray number from RIGHT to LEFT
         """
@@ -66,29 +66,37 @@ class SensorModel:
         # v = np.array([R_w_l.item(0),R_w_l.item(2)])
         # p0 = R_w_r*np.array([[25],[0]]) + np.array([[x[0]],[x[1]]])
         # p0 = np.transpose(p0)
-        p0 = np.array([x])
-        print p0
-        v = np.array([[math.cos(theta)], [math.sin(theta)]])
-        print v
+        p0 = np.array([x, y])
+        # print "p0: ", p0
+        v = np.array([math.cos(theta), math.sin(theta)])
+
         t = 0
         counter = 1
-        p = p0 + t*v
+        # p = p0 + t*v
+        # print t*v
 
         while counter < 4000:
-            t = t + 3
+            t = t + 5
             counter = counter + 1
             p = p0 + t*v
-            px_occu = math.floor((p[0,0]-5)/10.0)
-            py_occu = math.floor((p[0,1]-5)/10.0)
+            # print "New Position: ", p
+            # px_occu = math.ceil((p[0,0]-5.0)/10.0)
+            # py_occu = math.ceil((p[0,1]-5.0)/10.0)
+            # print p
+            # print p[0, 0]
+            # print p[0, 1]
+            px_occu = (p[0]-5.0) / 10.0
+            py_occu = (p[1]-5.0) / 10.0
             # print px_occu
             # print py_occu
             if py_occu < 800 and px_occu < 800:
-                occu_val = self._map[py_occu,px_occu]
+                occu_val = self._map[py_occu, px_occu]
             else:
                 return self._z_max
 
             if occu_val > 0.1:
-                dist = np.array([10*(px_occu-1)+5-x[0],10*(py_occu-1)+5-x[1]])
+                dist = np.array([10*(px_occu-1)+5-x,10*(py_occu-1)+5-y])
+                # print dist
                 # testx.append(px_occu)
                 # testy.append(py_occu)
                 # print counter
@@ -110,6 +118,7 @@ class SensorModel:
         R_w_r = np.matrix([[math.cos(theta),-math.sin(theta)],[math.sin(theta),math.cos(theta)]])
         R_w_l = R_r_l*R_w_r
         v = np.array([R_w_l.item(0),R_w_l.item(2)])
+        # print "v is: ", v
         p0 = R_w_r*np.array([[25],[0]]) + np.array([[x[0]],[x[1]]])
         p0 = np.transpose(p0)
         t = 0
@@ -120,7 +129,7 @@ class SensorModel:
             t = t + 5
             counter = counter + 1
             p = p0 + t*v
-            #print p
+            print p
             px_occu = math.floor((p[0,0]-5)/10.0)
             py_occu = math.floor((p[0,1]-5)/10.0)
             # print px_occu
@@ -207,26 +216,26 @@ if __name__=='__main__':
     # mng = plt.get_current_fig_manager();  # mng.resize(*mng.window.maxsize())
     # plt.ion(); plt.imshow(occupancy_map, cmap='Greys'); plt.axis([0, 800, 0, 800]);
     # plt.pause(100)
-    x = np.array([5000,1000,0])
-    x_l = [];
-    y_l = [];
-    for i in range(1,181):
-        print "Ray num: ", i
-        test,testx,testy = sensor_model.ray_casting_table(x,i)
-        print "d: ", test
-        x_l.extend(testx)
-        y_l.extend(testy)
-        print test
+    # x = np.array([5000,1000,0])
+    # x_l = [];
+    # y_l = [];
+    # for i in range(1,181):
+    #     print "Ray num: ", i
+    #     test,testx,testy = sensor_model.ray_casting(x,i)
+    #     print "d: ", test
+    #     x_l.extend(testx)
+    #     y_l.extend(testy)
+    #     print test
 
 
-    print sensor_model._map.shape
-    fig = plt.figure()
-    #plt.switch_backend('TkAgg')
-    mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
-    plt.ion();  plt.axis([0, 800, 0, 800]);
-    plt.plot(testx,testy)
-    plt.show()
-
-    plt.imshow(sensor_model._map, cmap='Greys');
-    plt.pause(100)
+    # print sensor_model._map.shape
+    # fig = plt.figure()
+    # #plt.switch_backend('TkAgg')
+    # mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
+    # plt.ion();  plt.axis([0, 800, 0, 800]);
+    # plt.plot(testx,testy)
+    # plt.show()
+    #
+    # plt.imshow(sensor_model._map, cmap='Greys');
+    # plt.pause(100)
     pass
