@@ -162,6 +162,7 @@ class SensorModel:
         return -1,[],[]
 
     def get_range_from_table(self, x, n):
+
         return
 
     def beam_range_finder_model(self, z_t1_arr, x_t1):
