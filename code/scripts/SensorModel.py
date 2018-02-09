@@ -227,7 +227,7 @@ if __name__=='__main__':
     # fig = plt.figure()
     sensor_model = SensorModel(occupancy_map)
 
-    computeTable = 0
+    computeTable = 1
     if computeTable:
         sensor_model.computeTable()
         with open('ray_cast_table.dat', 'wb') as fp:
