@@ -114,7 +114,7 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles = 1
+    num_particles = 500
     # print occupancy_map
     X_bar = init_particles_freespace(num_particles, occupancy_map)
 
@@ -153,7 +153,6 @@ def main(mode):
             first_time_idx = False
             odom[0, :] = u_t0[0:2]
             continue
-
         X_bar_new = np.zeros( (num_particles,4), dtype=np.float64)
         u_t1 = odometry_robot
         odom[numSteps, :] = u_t0[0:2]
@@ -171,9 +170,9 @@ def main(mode):
             """
             if (meas_type == "L"):
                 z_t = ranges
-                # w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t, x_t1)
+                #w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t, x_t1)
                 w_t = sensor_model.beam_range_finder_model(z_t, x_t1)
-                # w_t = 1/num_particles
+                #w_t = 1/num_particles
                 X_bar_new[m,:] = np.hstack((x_t1, w_t))
             else:
                 X_bar_new[m,:] = np.hstack((x_t1, X_bar[m,3]))
@@ -191,7 +190,7 @@ def main(mode):
 
 
 
-    visualize_odometry(odom)
+    #visualize_odometry(odom)
 
 
 def test():

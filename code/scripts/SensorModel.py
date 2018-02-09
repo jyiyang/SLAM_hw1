@@ -23,10 +23,10 @@ class SensorModel:
 
     def __init__(self, occupancy_map):
 
-        self._sigma_hit = 50
-        self._lambda_short = 0.1
+        self._sigma_hit = 20
+        self._lambda_short = 2
         self._z_max = 8183;
-        self._weight = [0.6,0.2,0.1,0.1]
+        self._weight = [0.8,0.5,0.1,0.1]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -136,8 +136,8 @@ class SensorModel:
         # p = p0 + t*v
         testx = [math.ceil(p0[0,0]/10.0)]
         testy = [math.ceil(p0[0,1]/10.0)]
-        while counter < 8000:
-            t = t + 3
+        while counter < 1200:
+            t = t + 5
             counter = counter + 1
             p = p0 + t*v
             #print p
@@ -188,6 +188,7 @@ class SensorModel:
         # print x_ind, y_ind, angle_ind
 
         dist = self._table[y_ind][x_ind][angle_ind]
+
         return dist
 
     def beam_range_finder_model(self, z_t1_arr, x_t1):
@@ -202,8 +203,8 @@ class SensorModel:
 
         for i in xrange(1,181,5):
             z_t1 = z_t1_arr[i-1]
-            # z_k_opt,x_ray,y_ray = self.ray_casting(x_t1,i-1)
-            z_k_opt = self.get_range_from_table(x_t1,i-1)
+            z_k_opt,x_ray,y_ray = self.ray_casting(x_t1,i)
+            #z_k_opt = self.get_range_from_table(x_t1,i-1)
 
             # print "data: ",z_t1
             # print "measure: ",z_k_opt
@@ -247,7 +248,6 @@ class SensorModel:
             # print p_total
             q = q + math.log(p_total)
             #q = q*p_total
-            # print q
         return q#,x_l,y_l
 
 if __name__=='__main__':

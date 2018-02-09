@@ -37,8 +37,7 @@ class Resampling:
         param[in] X_bar : [num_particles x 4] sized array containing [x, y, theta, wt] values for all particles
         param[out] X_bar_resampled : [num_particles x 4] sized array containing [x, y, theta, wt] values for resampled set of particles
         """
-        self.normalize(X_bar)
-
+        X_bar = self.normalize(X_bar)
         num_particles = np.shape(X_bar)[0]
         X_bar_resampled = np.zeros([num_particles, 4])
 
@@ -60,6 +59,7 @@ class Resampling:
         num_particles = np.shape(X_bar)[0]
         for i in xrange(num_particles):
             X_bar[i, 3] = X_bar[i, 3] / normalized_factor
+        return X_bar
 
 def init_particles_freespace(num_particles, occupancy_map):
 
