@@ -24,9 +24,9 @@ class SensorModel:
     def __init__(self, occupancy_map):
 
         self._sigma_hit = 60
-        self._lambda_short = 10
+        self._lambda_short = 0.02
         self._z_max = 8183;
-        self._weight = [0.8,0.6,0.1,0.1]
+        self._weight = [0.8,0.1,0.1,0.1]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -134,12 +134,12 @@ class SensorModel:
         t = 0
         counter = 1
         # p = p0 + t*v
-        # testx = [math.ceil(p0[0,0]/10.0)]
-        # testy = [math.ceil(p0[0,1]/10.0)]
-        testx = []
-        testy = []
+        testx = [math.ceil(p0[0,0]/10.0)]
+        testy = [math.ceil(p0[0,1]/10.0)]
+        # testx = []
+        # testy = []
         while counter < 1200:
-            t = t + 5
+            t = t + 20
             counter = counter + 1
             p = p0 + t*v
             #print p
@@ -155,7 +155,7 @@ class SensorModel:
                 return self._z_max,testx,testy
 
             if occu_val > 0.1:
-                dist = np.array([10*(px_occu-1)+5-x[0],10*(py_occu-1)+5-x[1]])
+                dist = np.array([10*(px_occu-1)+5-p0[0,0],10*(py_occu-1)+5-p0[0,1]])
                 testx.append(px_occu)
                 testy.append(py_occu)
                 return np.linalg.norm(dist),testx,testy
@@ -181,7 +181,7 @@ class SensorModel:
         # v = np.array([R_w_l.item(0),R_w_l.item(2)])
         R_r_w = np.transpose(R_w_r)
         #p0 = R_r_w*np.array([[25],[0]]) + np.array([[x[0]],[x[1]]])
-        
+
         #p0 = np.transpose(p0)
 
         p0 = np.array([[x[0]],[x[1]]])
@@ -204,10 +204,15 @@ class SensorModel:
         param[in] x_t1 : particle state belief [x, y, theta] at time t [world_frame]
         param[out] prob_zt1 : likelihood of a range scan zt1 at time t
         """
-        q = 0;
-        x_l = [];
-        y_l = [];
+        q = 0
+        # q = 1
+        x_l = []
+        y_l = []
 
+        px_occu = math.ceil(x_t1[0]/10.0)
+        py_occu = math.ceil(x_t1[1]/10.0)
+        if self._map[py_occu,px_occu]>0.1:
+            return 0,[],[]
         for i in xrange(1,181,5):
             z_t1 = z_t1_arr[i-1]
             z_k_opt,x_ray,y_ray = self.ray_casting(x_t1,i)
@@ -254,6 +259,7 @@ class SensorModel:
             p_total = self._weight[0]*p_hit + self._weight[1]*p_short + self._weight[2]*p_max + self._weight[3]*p_rand
             # print p_total
             q = q + math.log(p_total)
+            #q = q + p_total
             #q = q*p_total
         return q,x_l,y_l
 
@@ -305,60 +311,30 @@ if __name__=='__main__':
     # plt.pause(100)
 
     # Test beam model
-    q = 0
-    z_k_opt = 2000
-    q_arr = []
+    src_path_map = '../data/map/wean.dat'
+    src_path_log = '../data/log/robotdata1.log'
+    map_obj = MapReader(src_path_map)
 
-    _sigma_hit = 60
-    _lambda_short = 2
-    _z_max = 8183;
-    _weight = [0.8,0.6,0.1,0.1]
+    occupancy_map = map_obj.get_map()
+    sensor_model = SensorModel(occupancy_map)
+    logfile = open(src_path_log, 'r')
+    for time_idx, line in enumerate(logfile):
+        meas_type = line[0] # L : laser scan measurement, O : odometry measurement
+        meas_vals = np.fromstring(line[2:], dtype=np.float64, sep=' ')
+        if (meas_type == "L"):
+             odometry_robot = meas_vals[0:3]
+             odometry_laser = meas_vals[3:6] # [x, y, theta] coordinates of laser in odometry frame
+             ranges = meas_vals[6:-1]
+             z_t = ranges
+             w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t,odometry_robot)
+             print w_t
+             fig = plt.figure()
 
-    for i in xrange(1,8183):
-        z_t1 = i;
-        if z_t1 >= 0 and z_t1 <= _z_max:
-                p_hit = math.exp(-0.5*((z_t1-z_k_opt)**2)/(_sigma_hit**2))/math.sqrt(2*math.pi*(_sigma_hit**2))
-                # print p_hit
-        else:
-            # print "Hit error"
-            p_hit = 0
-
-        # 2. Unexpected objects
-        if z_t1 >= 0 and z_t1 <= z_k_opt:
-            p_short = _lambda_short*math.exp(-_lambda_short*z_t1)/(1-math.exp(-_lambda_short*z_k_opt))
-            # print p_short
-        else:
-            # print "Short error"
-            p_short = 0
-
-            # 3. Failures
-        if z_t1 == _z_max:
-            p_max = 1
-        else:
-            # print "Max error"
-            p_max = 0
-
-        if z_t1 >= 0 and z_t1 <= _z_max:
-            p_rand = 1/float(_z_max)
-            # print p_rand
-        else:
-            # print "Random error"
-            p_rand = 0;
-
-
-        p_total = _weight[0]*p_hit + _weight[1]*p_short + _weight[2]*p_max + _weight[3]*p_rand
-        # print p_total
-        q = q + math.log(p_total)
-        q_arr.append(q)
-
-
-    q_arr_norm = []
-    for item in q_arr:
-        q_arr_norm.append(item/sum(q_arr))
-
-    print q_arr_norm
-    fig = plt.figure()
-    plt.hist(q_arr_norm,8182)    
-    plt.show()
+             plt.axis([0, 800, 0, 800]);
+             plt.plot(x_l,y_l,c='b')
+             plt.show()
+             plt.imshow(sensor_model._map, cmap='Greys');
+             plt.pause(100)
+             break
 
     pass
