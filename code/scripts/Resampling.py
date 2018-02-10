@@ -45,12 +45,12 @@ class Resampling:
         c = X_bar[0, 3]
 
         i = 0
-        for m in xrange(num_particles):
+        for m in xrange(1,num_particles+1):
             U = r + (m - 1) * (1.0/num_particles)
             while U > c:
                 i += 1
                 c += X_bar[i, 3]
-            X_bar_resampled[m, :] = X_bar[i, :]
+            X_bar_resampled[m-1, :] = X_bar[i, :]
 
         return X_bar_resampled
 

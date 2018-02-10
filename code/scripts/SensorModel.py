@@ -23,15 +23,15 @@ class SensorModel:
 
     def __init__(self, occupancy_map):
 
-        self._sigma_hit = 20
-        self._lambda_short = 2
+        self._sigma_hit = 60
+        self._lambda_short = 10
         self._z_max = 8183;
-        self._weight = [0.8,0.5,0.1,0.1]
+        self._weight = [0.8,0.6,0.1,0.1]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
         # print size
-        self._table = [[[0 for i in xrange(180)] for j in xrange(size[0])] for k in xrange(size[1])]
+        #self._table = [[[0 for i in xrange(180)] for j in xrange(size[0])] for k in xrange(size[1])]
         # print len(self._table)
         # print len(self._table[0])
         # print len(self._table[0][0])
@@ -134,8 +134,10 @@ class SensorModel:
         t = 0
         counter = 1
         # p = p0 + t*v
-        testx = [math.ceil(p0[0,0]/10.0)]
-        testy = [math.ceil(p0[0,1]/10.0)]
+        # testx = [math.ceil(p0[0,0]/10.0)]
+        # testy = [math.ceil(p0[0,1]/10.0)]
+        testx = []
+        testy = []
         while counter < 1200:
             t = t + 5
             counter = counter + 1
@@ -177,7 +179,12 @@ class SensorModel:
         R_w_r = np.matrix([[math.cos(theta),-math.sin(theta)],[math.sin(theta),math.cos(theta)]])
         # R_w_l = R_r_l*R_w_r
         # v = np.array([R_w_l.item(0),R_w_l.item(2)])
-        p0 = R_w_r*np.array([[25],[0]]) + np.array([[x[0]],[x[1]]])
+        R_r_w = np.transpose(R_w_r)
+        #p0 = R_r_w*np.array([[25],[0]]) + np.array([[x[0]],[x[1]]])
+        
+        #p0 = np.transpose(p0)
+
+        p0 = np.array([[x[0]],[x[1]]])
         p0 = np.transpose(p0)
 
         angle = self.norm_angle(theta + phi)
@@ -198,8 +205,8 @@ class SensorModel:
         param[out] prob_zt1 : likelihood of a range scan zt1 at time t
         """
         q = 0;
-        # x_l = [];
-        # y_l = [];
+        x_l = [];
+        y_l = [];
 
         for i in xrange(1,181,5):
             z_t1 = z_t1_arr[i-1]
@@ -210,8 +217,8 @@ class SensorModel:
             # print "measure: ",z_k_opt
             if z_k_opt == -1:
                 continue
-            # x_l.extend(x_ray)
-            # y_l.extend(y_ray)
+            x_l.extend(x_ray)
+            y_l.extend(y_ray)
             # 1. Hit model
             if z_t1 >= 0 and z_t1 <= self._z_max:
                 p_hit = math.exp(-0.5*((z_t1-z_k_opt)**2)/(self._sigma_hit**2))/math.sqrt(2*math.pi*(self._sigma_hit**2))
@@ -248,7 +255,7 @@ class SensorModel:
             # print p_total
             q = q + math.log(p_total)
             #q = q*p_total
-        return q#,x_l,y_l
+        return q,x_l,y_l
 
 if __name__=='__main__':
     src_path_map = '../data/map/wean.dat'

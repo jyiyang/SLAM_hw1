@@ -72,13 +72,17 @@ def visualize_odometry(odom):
     plt.show()
 
 def visualize_ray(x,y):
+    # if len(x)!=0:
+    #     scat = plt.plot(x,y, c='b')
+    #     plt.pause(0.00001)
+    #     #del(scat)
+    #     scat.remove(scat[0])
+    #     del scat
     if len(x)!=0:
-        scat = plt.plot(x,y, c='b')
-        plt.pause(0.00001)
-        #del(scat)
-        scat.remove(scat[0])
-        del scat
 
+        scat = plt.scatter(x, y, c='b', marker='o')
+        plt.pause(0.00001)
+        scat.remove()
 
 
 def main(mode):
@@ -96,6 +100,9 @@ def main(mode):
     """
     Initialize Parameters
     """
+    x_l = []
+    y_l = []
+
     src_path_map = '../data/map/wean.dat'
     src_path_log = '../data/log/robotdata1.log'
 
@@ -114,7 +121,7 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles = 500
+    num_particles =  8000
     # print occupancy_map
     X_bar = init_particles_freespace(num_particles, occupancy_map)
 
@@ -170,8 +177,8 @@ def main(mode):
             """
             if (meas_type == "L"):
                 z_t = ranges
-                #w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t, x_t1)
-                w_t = sensor_model.beam_range_finder_model(z_t, x_t1)
+                w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t, x_t1)
+                #w_t = sensor_model.beam_range_finder_model(z_t, x_t1)
                 #w_t = 1/num_particles
                 X_bar_new[m,:] = np.hstack((x_t1, w_t))
             else:
@@ -187,7 +194,7 @@ def main(mode):
 
         if vis_flag:
             visualize_timestep(X_bar, time_idx)
-
+            #visualize_ray(x_l,y_l)
 
 
     #visualize_odometry(odom)

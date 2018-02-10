@@ -14,15 +14,15 @@ class MotionModel:
         """
         TODO : Initialize Motion Model parameters here
         """
-        # self.alpha1 = 0.5
-        # self.alpha2 = 0.5
-        # self.alpha3 = 0.5
-        # self.alpha4 = 0.5
+        self.alpha1 = 5
+        self.alpha2 = 5
+        self.alpha3 = 5
+        self.alpha4 = 5
 
-        self.alpha1 = 0
-        self.alpha2 = 0
-        self.alpha3 = 0
-        self.alpha4 = 0
+        # self.alpha1 = 0
+        # self.alpha2 = 0
+        # self.alpha3 = 0
+        # self.alpha4 = 0
 
 
     def update(self, u_t0, u_t1, x_t0):
