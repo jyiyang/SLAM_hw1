@@ -261,19 +261,19 @@ if __name__=='__main__':
     src_path_map = '../data/map/wean.dat'
     src_path_log = '../data/log/robotdata1.log'
 
-    map_obj = MapReader(src_path_map)
-    occupancy_map = map_obj.get_map()
-    # logfile = open(src_path_log, 'r')
-    # fig = plt.figure()
-    sensor_model = SensorModel(occupancy_map)
+    # map_obj = MapReader(src_path_map)
+    # occupancy_map = map_obj.get_map()
+    # # logfile = open(src_path_log, 'r')
+    # # fig = plt.figure()
+    # sensor_model = SensorModel(occupancy_map)
 
-    computeTable = 1
-    if computeTable:
-        sensor_model.computeTable()
-        with open('ray_cast_table.dat', 'wb') as fp:
-            pickle.dump(sensor_model._table, fp)
-    else:
-        sensor_model.readTable()
+    # computeTable = 1
+    # if computeTable:
+    #     sensor_model.computeTable()
+    #     with open('ray_cast_table.dat', 'wb') as fp:
+    #         pickle.dump(sensor_model._table, fp)
+    # else:
+    #     sensor_model.readTable()
 
 
 
@@ -303,4 +303,62 @@ if __name__=='__main__':
     #
     # plt.imshow(sensor_model._map, cmap='Greys');
     # plt.pause(100)
+
+    # Test beam model
+    q = 0
+    z_k_opt = 2000
+    q_arr = []
+
+    _sigma_hit = 60
+    _lambda_short = 2
+    _z_max = 8183;
+    _weight = [0.8,0.6,0.1,0.1]
+
+    for i in xrange(1,8183):
+        z_t1 = i;
+        if z_t1 >= 0 and z_t1 <= _z_max:
+                p_hit = math.exp(-0.5*((z_t1-z_k_opt)**2)/(_sigma_hit**2))/math.sqrt(2*math.pi*(_sigma_hit**2))
+                # print p_hit
+        else:
+            # print "Hit error"
+            p_hit = 0
+
+        # 2. Unexpected objects
+        if z_t1 >= 0 and z_t1 <= z_k_opt:
+            p_short = _lambda_short*math.exp(-_lambda_short*z_t1)/(1-math.exp(-_lambda_short*z_k_opt))
+            # print p_short
+        else:
+            # print "Short error"
+            p_short = 0
+
+            # 3. Failures
+        if z_t1 == _z_max:
+            p_max = 1
+        else:
+            # print "Max error"
+            p_max = 0
+
+        if z_t1 >= 0 and z_t1 <= _z_max:
+            p_rand = 1/float(_z_max)
+            # print p_rand
+        else:
+            # print "Random error"
+            p_rand = 0;
+
+
+        p_total = _weight[0]*p_hit + _weight[1]*p_short + _weight[2]*p_max + _weight[3]*p_rand
+        # print p_total
+        q = q + math.log(p_total)
+        q_arr.append(q)
+
+
+    q_arr_norm = []
+    for item in q_arr:
+        q_arr_norm.append(item/sum(q_arr))
+
+    print q_arr_norm
+    fig = plt.figure()
+    plt.hist(q_arr_norm,8182)    
+    plt.show()
+
     pass
