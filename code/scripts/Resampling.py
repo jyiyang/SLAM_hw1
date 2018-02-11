@@ -55,10 +55,16 @@ class Resampling:
         return X_bar_resampled
 
     def normalize(self, X_bar):
-        normalized_factor = np.sum(X_bar[:, 3])
+        # normalized_factor = np.sum(X_bar[:, 3])
+        # num_particles = np.shape(X_bar)[0]
+        # for i in xrange(num_particles):
+        #     X_bar[i, 3] = X_bar[i, 3] / normalized_factor
+        # return X_bar
         num_particles = np.shape(X_bar)[0]
+        norm_min = np.min(X_bar[:,3])
+        norm_max = np.max(X_bar[:,3])
         for i in xrange(num_particles):
-            X_bar[i, 3] = X_bar[i, 3] / normalized_factor
+            X_bar[i,3] = (X_bar[i,3]-norm_min)/(norm_max-norm_min)
         return X_bar
 
 def init_particles_freespace(num_particles, occupancy_map):
