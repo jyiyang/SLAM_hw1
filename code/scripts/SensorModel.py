@@ -23,10 +23,10 @@ class SensorModel:
 
     def __init__(self, occupancy_map):
 
-        self._sigma_hit = 60
+        self._sigma_hit = 50
         self._lambda_short = 0.02
         self._z_max = 8183;
-        self._weight = [0.8,0.1,0.1,0.1]
+        self._weight = [0.7,0.1,0.1,0.1]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -198,13 +198,22 @@ class SensorModel:
 
         return dist
 
+    def get_endpoints(self,x,dist,n):
+        angle = x[2] + (n-90)*math.pi/180
+        laserpos = np.array([x[0]+25*math.cos(x[2]),x[1]+25*math.sin(x[2])])
+        endpoint = laserpos + np.array([dist*math.cos(angle),dist*math.sin(angle)])
+        return endpoint
+
+
+
+
     def beam_range_finder_model(self, z_t1_arr, x_t1):
         """
         param[in] z_t1_arr : laser range readings [array of 180 values] at time t
         param[in] x_t1 : particle state belief [x, y, theta] at time t [world_frame]
         param[out] prob_zt1 : likelihood of a range scan zt1 at time t
         """
-        q = 0
+        q = []
         # q = 1
         x_l = []
         y_l = []
@@ -213,7 +222,7 @@ class SensorModel:
         py_occu = math.ceil(x_t1[1]/10.0)
         if self._map[py_occu,px_occu]>0.1:
             return 0,[],[]
-        for i in xrange(1,181,5):
+        for i in xrange(1,181,10):
             z_t1 = z_t1_arr[i-1]
             z_k_opt,x_ray,y_ray = self.ray_casting(x_t1,i)
             #z_k_opt = self.get_range_from_table(x_t1,i-1)
@@ -258,10 +267,14 @@ class SensorModel:
 
             p_total = self._weight[0]*p_hit + self._weight[1]*p_short + self._weight[2]*p_max + self._weight[3]*p_rand
             # print p_total
-            q = q + math.log(p_total)
+            q.append(math.log(p_total))
+            #q.append(p_total)
+
             #q = q + p_total
             #q = q*p_total
-        return q,x_l,y_l
+        #q_v = sum(q)/len(q)
+        #q_v = math.exp(q_v)
+        return (sum(q)),x_l,y_l
 
 if __name__=='__main__':
     src_path_map = '../data/map/wean.dat'
@@ -326,13 +339,26 @@ if __name__=='__main__':
              odometry_laser = meas_vals[3:6] # [x, y, theta] coordinates of laser in odometry frame
              ranges = meas_vals[6:-1]
              z_t = ranges
-             w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t,odometry_robot)
+
+             x = np.array([4500,1000,0])
+
+             gtx = []
+             gty = []
+             for j in xrange(1,181,5):
+                gtx.append((x[0]+25*math.cos(x[2]))/10)
+                gty.append((x[1]+25*math.sin(x[2]))/10)
+                ep = sensor_model.get_endpoints(x,ranges[j],j)
+                gtx.append(ep[0]/10)
+                gty.append(ep[1]/10)
+
+             w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t,x)
              print w_t
              fig = plt.figure()
-
+             plt.switch_backend('TkAgg')
+             mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
              plt.axis([0, 800, 0, 800]);
              plt.plot(x_l,y_l,c='b')
-             plt.show()
+             plt.plot(gtx,gty,c='r')
              plt.imshow(sensor_model._map, cmap='Greys');
              plt.pause(100)
              break
