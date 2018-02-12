@@ -32,7 +32,7 @@ def init_particles_random(num_particles, occupancy_map):
 
     # initialize [x, y, theta] positions in world_frame for all particles
     # (randomly across the map)
-    y0_vals = np.random.uniform( 3000, 5000, (num_particles, 1) )
+    y0_vals = np.random.uniform( 0, 7000, (num_particles, 1) )
     x0_vals = np.random.uniform( 3000, 5000, (num_particles, 1) )
     theta0_vals = np.random.uniform( -3.14, 3.14, (num_particles, 1) )
 
@@ -53,8 +53,10 @@ def init_particles_freespace(num_particles, occupancy_map):
 
     i = 0
     while i < num_particles:
-        y0_val = np.random.uniform(3000, 5000)
-        x0_val = np.random.uniform(3000, 5000)
+        # y0_val = np.random.uniform(3000, 5000)
+        # x0_val = np.random.uniform(3000, 5000)
+        y0_val = np.random.uniform(0, 7000)
+        x0_val = np.random.uniform(3000, 7000)
         theta0_val = np.random.uniform(-3.1415, 3.1415)
 
         occupied = occupancy_map[math.ceil(y0_val / 10.0), math.ceil(x0_val / 10.0)]
@@ -120,11 +122,11 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles = 5
+    num_particles = 500
     # print occupancy_map
     X_bar = init_particles_freespace(num_particles, occupancy_map)
 
-    vis_flag = 1
+    vis_flag = 0
     odom = np.zeros((2218, 2))
     """
     Monte Carlo Localization Algorithm : Main Loop
@@ -191,9 +193,9 @@ def main(mode):
         """
         RESAMPLING
         """
-        X_bar = resampler.low_variance_sampler(X_bar)
-        X_bar = X_bar_new
-        print sensor_flag,X_bar
+        X_bar = resampler.low_variance_sampler(X_bar_new)
+        #X_bar = X_bar_new
+        # print sensor_flag,X_bar
         if vis_flag:
             visualize_timestep(X_bar, time_idx)
             #visualize_ray(x_l,y_l)

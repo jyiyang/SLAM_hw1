@@ -16,8 +16,8 @@ class MotionModel:
         """
         self.alpha1 = 0.005
         self.alpha2 = 0.001
-        self.alpha3 = 0
-        self.alpha4 = 0
+        self.alpha3 = 0.001
+        self.alpha4 = 0.001
 
         # self.alpha1 = 0
         # self.alpha2 = 0

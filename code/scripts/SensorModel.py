@@ -26,7 +26,7 @@ class SensorModel:
         self._sigma_hit = 60
         self._lambda_short = 0.0002
         self._z_max = 8183;
-        self._weight = [1,0.1,0.1,0.5]
+        self._weight = [800,10,10,20]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -179,7 +179,7 @@ class SensorModel:
         testy = [math.ceil(p0[0,1]/10.0)]
 
         while counter < 800:
-            t = t + 20
+            t = t + 5
             counter = counter + 1
             p = p0 + t*v
             px_occu = math.ceil(p[0,0]/10.0)
