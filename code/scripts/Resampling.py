@@ -63,27 +63,30 @@ class Resampling:
         normalized_factor = np.sum(X_bar[:, 3])
         num_particles = np.shape(X_bar)[0]
         w = np.array(X_bar[:,3])
-        #for i in xrange(num_particles):
+        # for i in xrange(num_particles):
         #    X_bar[i,3] = X_bar[i, 3] / normalized_factor
-        if not norm_max > norm_max:
+        if not norm_max > norm_min:
+            print "Normal bound"
             for i in xrange(num_particles):
                 X_bar[i,3] = X_bar[i, 3] / normalized_factor
         else:
+            print "Special bound"
             for i in xrange(num_particles):
                 X_bar[i,3] = (X_bar[i,3]-norm_min)/float(norm_max-norm_min)
-        
-        if self.flag==1:
-        
-            fig,axes = plt.subplots(nrows=2, ncols=1)
-            ax0,ax1 = axes.flatten()
-            ax0.hist(w)
-            ax1.hist(X_bar[:,3])
-            plt.show()
-        
-        for i in xrange(num_particles):
-            if X_bar[i,3]<0:
-                print "==========fuck ya=========="
-        return X_bar
+                print X_bar[i,3]
+        #
+        # if self.flag==1:
+        #
+        #     fig,axes = plt.subplots(nrows=2, ncols=1)
+        #     ax0,ax1 = axes.flatten()
+        #     ax0.hist(w)
+        #     ax1.hist(X_bar[:,3])
+        #     plt.show()
+        #
+        # for i in xrange(num_particles):
+        #     if X_bar[i,3]<0:
+        #         print "==========fuck ya=========="
+        #return X_bar
 
         # Test softmax
         # num_particles = np.shape(X_bar)[0]

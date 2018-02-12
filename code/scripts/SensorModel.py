@@ -26,7 +26,7 @@ class SensorModel:
         self._sigma_hit = 60
         self._lambda_short = 0.0002
         self._z_max = 8183;
-        self._weight = [1,0.1,0.1,0.1]
+        self._weight = [1,0.1,0.1,0.5]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -179,7 +179,7 @@ class SensorModel:
         testy = [math.ceil(p0[0,1]/10.0)]
 
         while counter < 800:
-            t = t + 5
+            t = t + 20
             counter = counter + 1
             p = p0 + t*v
             px_occu = math.ceil(p[0,0]/10.0)
@@ -263,7 +263,7 @@ class SensorModel:
         py_occu = math.ceil(x_t1[1]/10.0)
         if self._map[py_occu,px_occu]>0.3:
             return math.log(0.0001),[],[]
-        for i in xrange(1,181,2):
+        for i in xrange(1,181,10):
             z_t1 = z_t1_arr[i-1]
             z_k_opt,hit,x_ray,y_ray = self.ray_casting_badgalzizi(x_t1,i)
             #z_k_opt = self.get_range_from_table(x_t1,i-1)

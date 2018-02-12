@@ -32,8 +32,8 @@ def init_particles_random(num_particles, occupancy_map):
 
     # initialize [x, y, theta] positions in world_frame for all particles
     # (randomly across the map)
-    y0_vals = np.random.uniform( 0, 7000, (num_particles, 1) )
-    x0_vals = np.random.uniform( 3000, 7000, (num_particles, 1) )
+    y0_vals = np.random.uniform( 3000, 5000, (num_particles, 1) )
+    x0_vals = np.random.uniform( 3000, 5000, (num_particles, 1) )
     theta0_vals = np.random.uniform( -3.14, 3.14, (num_particles, 1) )
 
     # initialize weights for all particles
@@ -53,11 +53,11 @@ def init_particles_freespace(num_particles, occupancy_map):
 
     i = 0
     while i < num_particles:
-        y0_val = np.random.uniform(0, 7000)
-        x0_val = np.random.uniform(3000, 7000)
+        y0_val = np.random.uniform(3000, 5000)
+        x0_val = np.random.uniform(3000, 5000)
         theta0_val = np.random.uniform(-3.1415, 3.1415)
 
-        occupied = occupancy_map[math.floor(y0_val / 10.0), math.floor(x0_val / 10.0)]
+        occupied = occupancy_map[math.ceil(y0_val / 10.0), math.ceil(x0_val / 10.0)]
         # print type(occupied)
         if math.fabs(occupied) < 1e-3:
             X_bar_init[i, :] = np.array([x0_val, y0_val, theta0_val, w0_val])
@@ -120,7 +120,7 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles = 500
+    num_particles = 5
     # print occupancy_map
     X_bar = init_particles_freespace(num_particles, occupancy_map)
 
@@ -164,6 +164,7 @@ def main(mode):
         odom[numSteps, :] = u_t0[0:2]
         numSteps += 1
         # print u_t1
+        sensor_flag = None
         for m in xrange(0, num_particles):
 
             """
@@ -180,17 +181,19 @@ def main(mode):
                 #w_t = sensor_model.beam_range_finder_model(z_t, x_t1)
                 #w_t = 1/num_particles
                 X_bar_new[m,:] = np.hstack((x_t1, w_t))
+                sensor_flag = 'L'
             else:
                 X_bar_new[m,:] = np.hstack((x_t1, X_bar[m,3]))
+                sensor_flag = 'O'
 
-        X_bar = X_bar_new
         u_t0 = u_t1
 
         """
         RESAMPLING
         """
         X_bar = resampler.low_variance_sampler(X_bar)
-
+        X_bar = X_bar_new
+        print sensor_flag,X_bar
         if vis_flag:
             visualize_timestep(X_bar, time_idx)
             #visualize_ray(x_l,y_l)

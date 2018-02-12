@@ -16,8 +16,8 @@ class MotionModel:
         """
         self.alpha1 = 0.005
         self.alpha2 = 0.001
-        self.alpha3 = 0.5
-        self.alpha4 = 0.1
+        self.alpha3 = 0
+        self.alpha4 = 0
 
         # self.alpha1 = 0
         # self.alpha2 = 0
@@ -49,7 +49,7 @@ class MotionModel:
         x_prime = x_t0[0] + delta_trans_hat * math.cos(x_t0[2] + delta_rot1_hat)
         y_prime = x_t0[1] + delta_trans_hat * math.sin(x_t0[2] + delta_rot1_hat)
         theta_prime = x_t0[2] + delta_rot1_hat + delta_rot2_hat
-
+        theta_prime = (theta_prime + math.pi) %(2*math.pi) - math.pi
 
         x_t1 = [x_prime, y_prime, theta_prime]
         return x_t1
