@@ -24,9 +24,9 @@ class SensorModel:
     def __init__(self, occupancy_map):
 
         self._sigma_hit = 60
-        self._lambda_short = 0.02
+        self._lambda_short = 0.0002
         self._z_max = 8183;
-        self._weight = [0.5,0.1,0.1,0.1]
+        self._weight = [1,0.1,0.1,0.1]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -88,7 +88,7 @@ class SensorModel:
         # print t*v
 
         while counter < 4000:
-            t = t + 20
+            t = t + 10
             counter = counter + 1
             p = p0 + t*v
             # print "New Position: ", p
@@ -179,7 +179,7 @@ class SensorModel:
         testy = [math.ceil(p0[0,1]/10.0)]
 
         while counter < 800:
-            t = t + 10
+            t = t + 5
             counter = counter + 1
             p = p0 + t*v
             px_occu = math.ceil(p[0,0]/10.0)
@@ -192,7 +192,7 @@ class SensorModel:
                 testy.append(py_occu)
                 return self._z_max,hit,testx,testy
 
-            if occu_val > 0.4:
+            if occu_val > 0.3:
                 hit = 1
                 dist = np.array([10*(px_occu-1)+5-p0[0,0],10*(py_occu-1)+5-p0[0,1]])
                 testx.append(px_occu)
@@ -261,9 +261,9 @@ class SensorModel:
 
         px_occu = math.ceil(x_t1[0]/10.0)
         py_occu = math.ceil(x_t1[1]/10.0)
-        if self._map[py_occu,px_occu]>0.1:
-            return 0,[],[]
-        for i in xrange(1,181,12):
+        if self._map[py_occu,px_occu]>0.3:
+            return math.log(0.0001),[],[]
+        for i in xrange(1,181,2):
             z_t1 = z_t1_arr[i-1]
             z_k_opt,hit,x_ray,y_ray = self.ray_casting_badgalzizi(x_t1,i)
             #z_k_opt = self.get_range_from_table(x_t1,i-1)
@@ -314,7 +314,7 @@ class SensorModel:
 
             #q = q + p_total
             #q = q*p_total
-        # q_v = sum(q)/len(q)
+        #q_v = sum(q)/len(q)
         # q_total = np.array(q)
         # q_scale = q_total/q_v
         return sum(q),x_l,y_l

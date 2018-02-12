@@ -58,53 +58,45 @@ class Resampling:
         return X_bar_resampled
 
     def normalize(self, X_bar):
-        # norm_min = np.amin(X_bar[:,3])
-        # norm_max = np.amax(X_bar[:,3])
-        # normalized_factor = np.sum(X_bar[:, 3])
-        # num_particles = np.shape(X_bar)[0]
-        # w = np.array(X_bar[:,3])
-        #
-        # if not norm_max > norm_max:
-        #     for i in xrange(num_particles):
-        #         X_bar[i,3] = X_bar[i, 3] / normalized_factor
-        # else:
-        #     for i in xrange(num_particles):
-        #         X_bar[i,3] = (X_bar[i,3]-norm_min)/float(norm_max-norm_min)
-        #
-        # if self.flag==1:
-        #
-        #     fig,axes = plt.subplots(nrows=2, ncols=1)
-        #     ax0,ax1 = axes.flatten()
-        #     ax0.hist(w)
-        #     ax1.hist(X_bar[:,3])
-        #     plt.show()
-        #
-        # for i in xrange(num_particles):
-        #     if X_bar[i,3]<0:
-        #         print "==========fuck ya=========="
-        # return X_bar
-
-        # Test softmax
+        norm_min = np.amin(X_bar[:,3])
+        norm_max = np.amax(X_bar[:,3])
+        normalized_factor = np.sum(X_bar[:, 3])
         num_particles = np.shape(X_bar)[0]
-        tmp = []
+        w = np.array(X_bar[:,3])
+        #for i in xrange(num_particles):
+        #    X_bar[i,3] = X_bar[i, 3] / normalized_factor
+        if not norm_max > norm_max:
+            for i in xrange(num_particles):
+                X_bar[i,3] = X_bar[i, 3] / normalized_factor
+        else:
+            for i in xrange(num_particles):
+                X_bar[i,3] = (X_bar[i,3]-norm_min)/float(norm_max-norm_min)
+        
+        if self.flag==1:
+        
+            fig,axes = plt.subplots(nrows=2, ncols=1)
+            ax0,ax1 = axes.flatten()
+            ax0.hist(w)
+            ax1.hist(X_bar[:,3])
+            plt.show()
+        
         for i in xrange(num_particles):
-            tmp.append(X_bar[i,3])
-        tmp_exp = [math.exp(i) for i in tmp]
-        sumtmp = sum(tmp_exp)
-        for i in xrange(num_particles):
-            X_bar[i,3] = math.exp(X_bar[i,3])/sumtmp
+            if X_bar[i,3]<0:
+                print "==========fuck ya=========="
         return X_bar
 
-
-
+        # Test softmax
         # num_particles = np.shape(X_bar)[0]
-        # norm_min = np.amin(X_bar[:,3])
-        # norm_max = np.amax(X_bar[:,3])
-        # #print norm_max,norm_min
+        # tmp = []
         # for i in xrange(num_particles):
-        #     X_bar[i,3] = (X_bar[i,3]-norm_min)/(norm_max-norm_min)
-
+        #     tmp.append(X_bar[i,3])
+        # tmp_exp = [math.exp(i) for i in tmp]
+        # sumtmp = sum(tmp_exp)
+        # for i in xrange(num_particles):
+        #     X_bar[i,3] = math.exp(X_bar[i,3])/sumtmp
         # return X_bar
+
+
 
 def init_particles_freespace(num_particles, occupancy_map):
 

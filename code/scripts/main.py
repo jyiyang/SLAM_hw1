@@ -120,7 +120,7 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles = 8000
+    num_particles = 500
     # print occupancy_map
     X_bar = init_particles_freespace(num_particles, occupancy_map)
 
