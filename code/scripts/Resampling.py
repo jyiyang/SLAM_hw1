@@ -16,7 +16,7 @@ class Resampling:
         """
         TODO : Initialize resampling process parameters here
         """
-        self.flag = 1
+        self.flag = 0
 
     def multinomial_sampler(self, X_bar):
 
@@ -65,30 +65,25 @@ class Resampling:
         normalized_factor = np.sum(X_bar[:, 3])
         num_particles = np.shape(X_bar)[0]
         w = np.array(X_bar[:,3])
-        # for i in xrange(num_particles):
-        #    X_bar[i,3] = X_bar[i, 3] / normalized_factor
-        if not norm_max > norm_min:
-            for i in xrange(num_particles):
-                X_bar[i,3] = X_bar[i, 3] / normalized_factor
-        else:
-            for i in xrange(num_particles):
-                X_bar[i,3] = (X_bar[i,3]-norm_min)/float(norm_max-norm_min)
-        normalized_factor = np.sum(X_bar[:, 3])
         for i in xrange(num_particles):
            X_bar[i,3] = X_bar[i, 3] / normalized_factor
+        # if not norm_max > norm_min:
+        #     for i in xrange(num_particles):
+        #         X_bar[i,3] = X_bar[i, 3] / normalized_factor
+        # else:
+        #     for i in xrange(num_particles):
+        #         X_bar[i,3] = (X_bar[i,3]-norm_min)/float(norm_max-norm_min)
+        # normalized_factor = np.sum(X_bar[:, 3])
+        # for i in xrange(num_particles):
+        #    X_bar[i,3] = X_bar[i, 3] / normalized_factor
+        # #
+        # if self.flag==1:
         #
-        if self.flag==1:
-        
-            fig,axes = plt.subplots(nrows=2, ncols=1)
-            ax0,ax1 = axes.flatten()
-            ax0.hist(w)
-            ax1.hist(X_bar[:,3])
-            plt.show()
-        
-        for i in xrange(num_particles):
-            if X_bar[i,3]<0:
-                print "==========fuck ya=========="
-        return X_bar
+        #     fig,axes = plt.subplots(nrows=2, ncols=1)
+        #     ax0,ax1 = axes.flatten()
+        #     ax0.hist(w)
+        #     ax1.hist(X_bar[:,3])
+        #     plt.show()
 
         # Test softmax
         # num_particles = np.shape(X_bar)[0]

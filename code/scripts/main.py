@@ -48,15 +48,15 @@ def init_particles_freespace(num_particles, occupancy_map):
 
     # initialize [x, y, theta] positions in world_frame for all particles
     # (in free space areas of the map)
-    w0_val = 1.0 / num_particles
-    X_bar_init = np.zeros([num_particles, 4])
+    w0_val = 1.0 / (num_particles+1)
+    X_bar_init = np.zeros([num_particles+1, 4])
 
     i = 0
     while i < num_particles:
-        # y0_val = np.random.uniform(3000, 5000)
-        # x0_val = np.random.uniform(3000, 5000)
-        y0_val = np.random.uniform(0, 7000)
-        x0_val = np.random.uniform(3000, 7000)
+        y0_val = np.random.uniform(3000, 5000)
+        x0_val = np.random.uniform(3000, 5000)
+        # y0_val = np.random.uniform(0, 7000)
+        # x0_val = np.random.uniform(3000, 7000)
         theta0_val = np.random.uniform(-3.1415, 3.1415)
 
         occupied = occupancy_map[math.ceil(y0_val / 10.0), math.ceil(x0_val / 10.0)]
@@ -65,6 +65,7 @@ def init_particles_freespace(num_particles, occupancy_map):
             X_bar_init[i, :] = np.array([x0_val, y0_val, theta0_val, w0_val])
             i += 1
 
+    X_bar_init[num_particles,:] = np.array([4000,4000,3.14,w0_val])
     return X_bar_init
 
 def visualize_odometry(odom):
@@ -126,7 +127,7 @@ def main(mode):
     # print occupancy_map
     X_bar = init_particles_freespace(num_particles, occupancy_map)
 
-    vis_flag = 0
+    vis_flag = 1
     odom = np.zeros((2218, 2))
     """
     Monte Carlo Localization Algorithm : Main Loop

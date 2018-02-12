@@ -23,10 +23,10 @@ class SensorModel:
 
     def __init__(self, occupancy_map):
 
-        self._sigma_hit = 60
-        self._lambda_short = 0.0002
+        self._sigma_hit = 50
+        self._lambda_short = 0.002
         self._z_max = 8183;
-        self._weight = [800,10,10,20]
+        self._weight = [50,80,0.1,6500]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -179,7 +179,7 @@ class SensorModel:
         testy = [math.ceil(p0[0,1]/10.0)]
 
         while counter < 800:
-            t = t + 5
+            t = t + 10
             counter = counter + 1
             p = p0 + t*v
             px_occu = math.ceil(p[0,0]/10.0)
@@ -287,7 +287,8 @@ class SensorModel:
 
             # 2. Unexpected objects
             if z_t1 >= 0 and z_t1 <= z_k_opt:
-                p_short = self._lambda_short*math.exp(-self._lambda_short*z_t1)/(1-math.exp(-self._lambda_short*z_k_opt))
+                short_con = 1-math.exp(-self._lambda_short*z_k_opt)
+                p_short = self._lambda_short*math.exp(-self._lambda_short*z_t1)/short_con
                 # print p_short
             else:
                 # print "Short error"
@@ -317,7 +318,65 @@ class SensorModel:
         #q_v = sum(q)/len(q)
         # q_total = np.array(q)
         # q_scale = q_total/q_v
-        return sum(q),x_l,y_l
+        return math.exp(sum(q)),x_l,y_l
+
+
+    def beam_range_finder_model_test(self, x_t1, n):
+        """
+        param[in] z_t1_arr : laser range readings [array of 180 values] at time t
+        param[in] x_t1 : particle state belief [x, y, theta] at time t [world_frame]
+        param[out] prob_zt1 : likelihood of a range scan zt1 at time t
+        """
+        q = []
+        # q = 1
+        x_l = []
+        y_l = []
+
+        px_occu = math.ceil(x_t1[0]/10.0)
+        py_occu = math.ceil(x_t1[1]/10.0)
+        z_k_opt,hit,x_ray,y_ray = self.ray_casting_badgalzizi(x_t1,n)
+        print "Z optimal: ", z_k_opt
+
+        for i in xrange(1,8184):
+            z_t1 = i
+
+            # 1. Hit model
+            if z_t1 >= 0 and z_t1 <= self._z_max:
+                p_hit = math.exp(-0.5*((z_t1-z_k_opt)**2)/(self._sigma_hit**2))/math.sqrt(2*math.pi*(self._sigma_hit**2))
+                # print p_hit
+            else:
+                # print "Hit error"
+                p_hit = 0
+
+            # 2. Unexpected objects
+            if z_t1 >= 0 and z_t1 <= z_k_opt:
+                short_con = 1-math.exp(-self._lambda_short*z_k_opt)
+                p_short = self._lambda_short*math.exp(-self._lambda_short*z_t1)#/short_con
+                # print p_short
+            else:
+                # print "Short error"
+                p_short = 0
+
+            # 3. Failures
+            if z_t1 == self._z_max:
+                p_max = 1
+            else:
+                # print "Max error"
+                p_max = 0
+
+            #4. Random Measurements
+            if z_t1 >= 0 and z_t1 <= self._z_max:
+                p_rand = 1/float(self._z_max)
+                # print p_rand
+            else:
+                # print "Random error"
+                p_rand = 0;
+
+            p_total = self._weight[0]*p_hit + self._weight[1]*p_short + self._weight[2]*p_max + self._weight[3]*p_rand
+            q.append(p_total)
+            #q.append(p_total)
+        return q
+
 
 if __name__=='__main__':
     src_path_map = '../data/map/wean.dat'
@@ -367,43 +426,61 @@ if __name__=='__main__':
     # plt.pause(100)
 
     # Test beam model
+    # src_path_map = '../data/map/wean.dat'
+    # src_path_log = '../data/log/robotdata1.log'
+    # map_obj = MapReader(src_path_map)
+    #
+    # occupancy_map = map_obj.get_map()
+    # sensor_model = SensorModel(occupancy_map)
+    # logfile = open(src_path_log, 'r')
+    # for time_idx, line in enumerate(logfile):
+    #     meas_type = line[0] # L : laser scan measurement, O : odometry measurement
+    #     meas_vals = np.fromstring(line[2:], dtype=np.float64, sep=' ')
+    #     if (meas_type == "L"):
+    #          odometry_robot = meas_vals[0:3]
+    #          odometry_laser = meas_vals[3:6] # [x, y, theta] coordinates of laser in odometry frame
+    #          ranges = meas_vals[6:-1]
+    #          z_t = ranges
+    #
+    #          x = np.array([4150,3950,3.14])
+    #
+    #          gtx = []
+    #          gty = []
+    #          for j in xrange(1,181,5):
+    #             gtx.append((x[0]+25*math.cos(x[2]))/10)
+    #             gty.append((x[1]+25*math.sin(x[2]))/10)
+    #             ep = sensor_model.get_endpoints(x,ranges[j],j)
+    #             gtx.append(ep[0]/10)
+    #             gty.append(ep[1]/10)
+    #
+    #          w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t,x)
+    #          print w_t
+    #          fig = plt.figure()
+    #          #plt.switch_backend('TkAgg')
+    #          #mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
+    #          plt.axis([0, 800, 0, 800]);
+    #          plt.plot(x_l,y_l,c='b')
+    #          plt.plot(gtx,gty,c='r')
+    #          plt.imshow(sensor_model._map, cmap='Greys');
+    #          plt.pause(100)
+    #          break
+
+    # Test weight distribution
     src_path_map = '../data/map/wean.dat'
     src_path_log = '../data/log/robotdata1.log'
     map_obj = MapReader(src_path_map)
 
     occupancy_map = map_obj.get_map()
     sensor_model = SensorModel(occupancy_map)
-    logfile = open(src_path_log, 'r')
-    for time_idx, line in enumerate(logfile):
-        meas_type = line[0] # L : laser scan measurement, O : odometry measurement
-        meas_vals = np.fromstring(line[2:], dtype=np.float64, sep=' ')
-        if (meas_type == "L"):
-             odometry_robot = meas_vals[0:3]
-             odometry_laser = meas_vals[3:6] # [x, y, theta] coordinates of laser in odometry frame
-             ranges = meas_vals[6:-1]
-             z_t = ranges
 
-             x = np.array([4150,3950,3.14])
+    x = np.array([4150,3950,3.14])
+    n = 90
+    ray_range = xrange(1,8184)
+    q = sensor_model.beam_range_finder_model_test(x,n)
+    print len(q),len(ray_range)
+    fig = plt.figure()
+    plt.plot(ray_range,q)
+    plt.show()
 
-             gtx = []
-             gty = []
-             for j in xrange(1,181,5):
-                gtx.append((x[0]+25*math.cos(x[2]))/10)
-                gty.append((x[1]+25*math.sin(x[2]))/10)
-                ep = sensor_model.get_endpoints(x,ranges[j],j)
-                gtx.append(ep[0]/10)
-                gty.append(ep[1]/10)
-
-             w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t,x)
-             print w_t
-             fig = plt.figure()
-             #plt.switch_backend('TkAgg')
-             #mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
-             plt.axis([0, 800, 0, 800]);
-             plt.plot(x_l,y_l,c='b')
-             plt.plot(gtx,gty,c='r')
-             plt.imshow(sensor_model._map, cmap='Greys');
-             plt.pause(100)
-             break
 
     pass

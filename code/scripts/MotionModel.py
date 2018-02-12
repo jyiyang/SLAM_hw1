@@ -15,9 +15,9 @@ class MotionModel:
         TODO : Initialize Motion Model parameters here
         """
         self.alpha1 = 0.005
-        self.alpha2 = 0.001
-        self.alpha3 = 0.001
-        self.alpha4 = 0.001
+        self.alpha2 = 0.005
+        self.alpha3 = 0.005
+        self.alpha4 = 0.005
 
         # self.alpha1 = 0
         # self.alpha2 = 0
