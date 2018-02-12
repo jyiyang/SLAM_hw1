@@ -50,7 +50,7 @@ class MotionModel:
         y_prime = x_t0[1] + delta_trans_hat * math.sin(x_t0[2] + delta_rot1_hat)
         theta_prime = x_t0[2] + delta_rot1_hat + delta_rot2_hat
 
-    
+
         x_t1 = [x_prime, y_prime, theta_prime]
         return x_t1
 

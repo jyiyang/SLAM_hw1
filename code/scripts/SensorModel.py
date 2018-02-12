@@ -23,7 +23,7 @@ class SensorModel:
 
     def __init__(self, occupancy_map):
 
-        self._sigma_hit = 50
+        self._sigma_hit = 60
         self._lambda_short = 0.02
         self._z_max = 8183;
         self._weight = [0.5,0.1,0.1,0.1]
@@ -162,6 +162,47 @@ class SensorModel:
 
         return -1,[],[]
 
+    def ray_casting_badgalzizi(self, x, n):
+
+        hit = 0
+        theta = x[2]
+        phi = (n-90)*math.pi/180
+        R_r_l = np.matrix([[math.cos(phi),-math.sin(phi)],[math.sin(phi),math.cos(phi)]])
+        R_w_r = np.matrix([[math.cos(theta),-math.sin(theta)],[math.sin(theta),math.cos(theta)]])
+        R_w_l = R_r_l*R_w_r
+        v = np.array([R_w_l.item(0),R_w_l.item(2)])
+        p0 = R_w_r*np.array([[25],[0]]) + np.array([[x[0]],[x[1]]])
+        p0 = np.transpose(p0)
+        t = 0
+        counter = 1
+        testx = [math.ceil(p0[0,0]/10.0)]
+        testy = [math.ceil(p0[0,1]/10.0)]
+
+        while counter < 800:
+            t = t + 10
+            counter = counter + 1
+            p = p0 + t*v
+            px_occu = math.ceil(p[0,0]/10.0)
+            py_occu = math.ceil(p[0,1]/10.0)
+
+            if py_occu < 800 and px_occu < 800 and py_occu > 0 and px_occu > 0:
+                occu_val = self._map[py_occu,px_occu]
+            else:
+                testx.append(px_occu)
+                testy.append(py_occu)
+                return self._z_max,hit,testx,testy
+
+            if occu_val > 0.4:
+                hit = 1
+                dist = np.array([10*(px_occu-1)+5-p0[0,0],10*(py_occu-1)+5-p0[0,1]])
+                testx.append(px_occu)
+                testy.append(py_occu)
+                return np.linalg.norm(dist),hit,testx,testy
+
+        return -1,hit,[],[]
+
+
+
     def norm_angle(self, angle):
     	"""normalize an angle to be within 0 to 2*pi"""
 
@@ -222,15 +263,18 @@ class SensorModel:
         py_occu = math.ceil(x_t1[1]/10.0)
         if self._map[py_occu,px_occu]>0.1:
             return 0,[],[]
-        for i in xrange(1,181,10):
+        for i in xrange(1,181,12):
             z_t1 = z_t1_arr[i-1]
-            z_k_opt,x_ray,y_ray = self.ray_casting(x_t1,i)
+            z_k_opt,hit,x_ray,y_ray = self.ray_casting_badgalzizi(x_t1,i)
             #z_k_opt = self.get_range_from_table(x_t1,i-1)
 
             # print "data: ",z_t1
             # print "measure: ",z_k_opt
             if z_k_opt == -1:
                 continue
+            # if hit == 0:
+            #     q.append(math.log(0.1))
+            #     continue
             x_l.extend(x_ray)
             y_l.extend(y_ray)
             # 1. Hit model
@@ -264,16 +308,15 @@ class SensorModel:
                 # print "Random error"
                 p_rand = 0;
 
-
             p_total = self._weight[0]*p_hit + self._weight[1]*p_short + self._weight[2]*p_max + self._weight[3]*p_rand
             q.append(math.log(p_total))
             #q.append(p_total)
 
             #q = q + p_total
             #q = q*p_total
-        q_v = sum(q)/len(q)
-        q_total = np.array(q)
-        q_scale = q_total/q_v
+        # q_v = sum(q)/len(q)
+        # q_total = np.array(q)
+        # q_scale = q_total/q_v
         return sum(q),x_l,y_l
 
 if __name__=='__main__':
@@ -340,7 +383,7 @@ if __name__=='__main__':
              ranges = meas_vals[6:-1]
              z_t = ranges
 
-             x = np.array([4500,1000,0])
+             x = np.array([4150,3950,3.14])
 
              gtx = []
              gty = []
@@ -354,8 +397,8 @@ if __name__=='__main__':
              w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t,x)
              print w_t
              fig = plt.figure()
-             plt.switch_backend('TkAgg')
-             mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
+             #plt.switch_backend('TkAgg')
+             #mng = plt.get_current_fig_manager(); mng.resize(*mng.window.maxsize())
              plt.axis([0, 800, 0, 800]);
              plt.plot(x_l,y_l,c='b')
              plt.plot(gtx,gty,c='r')

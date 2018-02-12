@@ -120,11 +120,11 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles =  500
+    num_particles = 8000
     # print occupancy_map
     X_bar = init_particles_freespace(num_particles, occupancy_map)
 
-    vis_flag = 0
+    vis_flag = 1
     odom = np.zeros((2218, 2))
     """
     Monte Carlo Localization Algorithm : Main Loop
