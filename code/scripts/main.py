@@ -102,7 +102,6 @@ def main(mode):
     """
     x_l = []
     y_l = []
-
     src_path_map = '../data/map/wean.dat'
     src_path_log = '../data/log/robotdata1.log'
 
@@ -125,7 +124,7 @@ def main(mode):
     # print occupancy_map
     X_bar = init_particles_freespace(num_particles, occupancy_map)
 
-    vis_flag = 1
+    vis_flag = 0
     odom = np.zeros((2218, 2))
     """
     Monte Carlo Localization Algorithm : Main Loop

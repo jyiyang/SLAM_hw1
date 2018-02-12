@@ -26,7 +26,7 @@ class SensorModel:
         self._sigma_hit = 50
         self._lambda_short = 0.02
         self._z_max = 8183;
-        self._weight = [0.7,0.1,0.1,0.1]
+        self._weight = [0.5,0.1,0.1,0.1]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -88,7 +88,7 @@ class SensorModel:
         # print t*v
 
         while counter < 4000:
-            t = t + 5
+            t = t + 20
             counter = counter + 1
             p = p0 + t*v
             # print "New Position: ", p
@@ -139,7 +139,7 @@ class SensorModel:
         # testx = []
         # testy = []
         while counter < 1200:
-            t = t + 20
+            t = t + 5
             counter = counter + 1
             p = p0 + t*v
             #print p
@@ -266,15 +266,15 @@ class SensorModel:
 
 
             p_total = self._weight[0]*p_hit + self._weight[1]*p_short + self._weight[2]*p_max + self._weight[3]*p_rand
-            # print p_total
             q.append(math.log(p_total))
             #q.append(p_total)
 
             #q = q + p_total
             #q = q*p_total
-        #q_v = sum(q)/len(q)
-        #q_v = math.exp(q_v)
-        return (sum(q)),x_l,y_l
+        q_v = sum(q)/len(q)
+        q_total = np.array(q)
+        q_scale = q_total/q_v
+        return sum(q),x_l,y_l
 
 if __name__=='__main__':
     src_path_map = '../data/map/wean.dat'
