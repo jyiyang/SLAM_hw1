@@ -263,7 +263,7 @@ class SensorModel:
         py_occu = math.ceil(x_t1[1]/10.0)
         if self._map[py_occu,px_occu]>0.3:
             return math.log(0.0001),[],[]
-        for i in xrange(1,181,5):
+        for i in xrange(1,181,10):
             z_t1 = z_t1_arr[i-1]
             z_k_opt,hit,x_ray,y_ray = self.ray_casting_badgalzizi(x_t1,i)
             #z_k_opt = self.get_range_from_table(x_t1,i-1)

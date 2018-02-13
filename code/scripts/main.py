@@ -53,10 +53,10 @@ def init_particles_freespace(num_particles, occupancy_map):
 
     i = 0
     while i < num_particles:
-        y0_val = np.random.uniform(3800, 4100)
-        x0_val = np.random.uniform(3500, 4500)
         # y0_val = np.random.uniform(0, 7000)
-        # x0_val = np.random.uniform(3000, 7000)
+        # x0_val = np.random.uniform(3500, 4500)
+        y0_val = np.random.uniform(0, 7000)
+        x0_val = np.random.uniform(3000, 7000)
         theta0_val = np.random.uniform(-3.1415, 3.1415)
 
         occupied = occupancy_map[math.ceil(y0_val / 10.0), math.ceil(x0_val / 10.0)]
@@ -123,7 +123,7 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles = 500
+    num_particles = 4000
     # print occupancy_map
     X_bar = init_particles_freespace(num_particles, occupancy_map)
 
@@ -183,6 +183,7 @@ def main(mode):
                 w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t, x_t1)
                 #w_t = sensor_model.beam_range_finder_model(z_t, x_t1)
                 #w_t = 1/num_particles
+                # print w_t
                 X_bar_new[m,:] = np.hstack((x_t1, w_t))
                 sensor_flag = 'L'
                 
