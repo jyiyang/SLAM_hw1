@@ -65,7 +65,30 @@ def init_particles_freespace(num_particles, occupancy_map):
             X_bar_init[i, :] = np.array([x0_val, y0_val, theta0_val, w0_val])
             i += 1
 
-    # X_bar_init[num_particles,:] = np.array([4000,4000,3.14,w0_val])
+    return X_bar_init
+
+
+def init_particles_freespace_2(num_particles, occupancy_map):
+
+    # initialize [x, y, theta] positions in world_frame for all particles
+    # (in free space areas of the map)
+    w0_val = 1.0 / (num_particles)
+    X_bar_init = np.zeros([num_particles, 4])
+
+    i = 0
+    while i < num_particles:
+        y0_val = np.random.uniform(3500, 4500)
+        x0_val = np.random.uniform(3500, 4500)
+        # y0_val = np.random.uniform(0, 7000)
+        # x0_val = np.random.uniform(3000, 7000)
+        theta0_val = np.random.uniform(-3.1415, 3.1415)
+
+        occupied = occupancy_map[math.ceil(y0_val / 10.0), math.ceil(x0_val / 10.0)]
+        # print type(occupied)
+        if math.fabs(occupied) < 1e-3:
+            X_bar_init[i, :] = np.array([x0_val, y0_val, theta0_val, w0_val])
+            i += 1
+
     return X_bar_init
 
 def visualize_odometry(odom):
@@ -123,10 +146,14 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles = 4000
+    num_particles = 10000
     # print occupancy_map
-    X_bar = init_particles_freespace(num_particles, occupancy_map)
-
+    X_bar= init_particles_freespace(num_particles, occupancy_map)
+    # X_bar_2 = init_particles_freespace_2(500, occupancy_map)
+    # num_particles = 10500
+    # X_bar = np.zeros([num_particles,4])
+    # X_bar[0:10000,:] = X_bar_1
+    # X_bar[10000:10500,:] = X_bar_2
     vis_flag = 1
     odom = np.zeros((2218, 2))
     """

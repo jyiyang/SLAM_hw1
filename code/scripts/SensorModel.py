@@ -254,16 +254,16 @@ class SensorModel:
         param[in] x_t1 : particle state belief [x, y, theta] at time t [world_frame]
         param[out] prob_zt1 : likelihood of a range scan zt1 at time t
         """
-        q = []
-        # q = 1
+        #q = []
+        q = 1
         x_l = []
         y_l = []
 
         px_occu = math.ceil(x_t1[0]/10.0)
         py_occu = math.ceil(x_t1[1]/10.0)
         if self._map[py_occu,px_occu]>0.3:
-            return math.log(0.0001),[],[]
-        for i in xrange(1,181,10):
+            return 0,[],[]
+        for i in xrange(1,181,5):
             z_t1 = z_t1_arr[i-1]
             z_k_opt,hit,x_ray,y_ray = self.ray_casting_badgalzizi(x_t1,i)
             #z_k_opt = self.get_range_from_table(x_t1,i-1)
@@ -276,9 +276,9 @@ class SensorModel:
             #     q.append(math.log(0.1))
             #     continue
 
-            # if z_t1 > 1500:
-            #     q.append(math.log(0.00001))
-            #     continue
+            if z_t1 > 1500:
+                q.append(math.log(0.00001))
+                continue
 
             x_l.extend(x_ray)
             y_l.extend(y_ray)
@@ -315,15 +315,16 @@ class SensorModel:
                 p_rand = 0;
 
             p_total = self._weight[0]*p_hit + self._weight[1]*p_short + self._weight[2]*p_max + self._weight[3]*p_rand
-            q.append(math.log(p_total))
+            #q.append(math.log(p_total))
             #q.append(p_total)
-
+            q = q*p_total
             #q = q + p_total
             #q = q*p_total
         #q_v = sum(q)/len(q)
         # q_total = np.array(q)
         # q_scale = q_total/q_v
-        return math.exp(sum(q)),x_l,y_l
+        #math.exp(sum(q))
+        return q,x_l,y_l
 
 
     def beam_range_finder_model_test(self, x_t1, n):
