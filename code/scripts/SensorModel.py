@@ -23,10 +23,10 @@ class SensorModel:
 
     def __init__(self, occupancy_map):
 
-        self._sigma_hit = 50
+        self._sigma_hit = 80
         self._lambda_short = 0.002
         self._z_max = 8183;
-        self._weight = [40,20,0.1,6500]
+        self._weight = [80,5,0.1,6500]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -88,7 +88,7 @@ class SensorModel:
         # print t*v
 
         while counter < 4000:
-            t = t + 10
+            t = t + 20
             counter = counter + 1
             p = p0 + t*v
             # print "New Position: ", p
@@ -179,7 +179,7 @@ class SensorModel:
         testy = [math.ceil(p0[0,1]/10.0)]
 
         while counter < 800:
-            t = t + 10
+            t = t + 20
             counter = counter + 1
             p = p0 + t*v
             px_occu = math.ceil(p[0,0]/10.0)
@@ -276,9 +276,9 @@ class SensorModel:
             #     q.append(math.log(0.1))
             #     continue
 
-            if z_t1 > 1500:
-                q.append(math.log(0.00001))
-                continue
+            #if z_t1 > 1500:
+            #    q.append(math.log(0.00001))
+            #    continue
 
             x_l.extend(x_ray)
             y_l.extend(y_ray)
