@@ -77,13 +77,13 @@ class Resampling:
         # for i in xrange(num_particles):
         #    X_bar[i,3] = X_bar[i, 3] / normalized_factor
         # #
-        # if self.flag==1:
-        #
-        #     fig,axes = plt.subplots(nrows=2, ncols=1)
-        #     ax0,ax1 = axes.flatten()
-        #     ax0.hist(w)
-        #     ax1.hist(X_bar[:,3])
-        #     plt.show()
+        if self.flag==1:
+        
+            fig,axes = plt.subplots(nrows=2, ncols=1)
+            ax0,ax1 = axes.flatten()
+            ax0.hist(w)
+            ax1.hist(X_bar[:,3])
+            plt.show()
 
         # Test softmax
         # num_particles = np.shape(X_bar)[0]

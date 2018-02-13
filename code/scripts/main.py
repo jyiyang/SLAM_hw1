@@ -48,13 +48,13 @@ def init_particles_freespace(num_particles, occupancy_map):
 
     # initialize [x, y, theta] positions in world_frame for all particles
     # (in free space areas of the map)
-    w0_val = 1.0 / (num_particles+1)
-    X_bar_init = np.zeros([num_particles+1, 4])
+    w0_val = 1.0 / (num_particles)
+    X_bar_init = np.zeros([num_particles, 4])
 
     i = 0
     while i < num_particles:
-        y0_val = np.random.uniform(3000, 5000)
-        x0_val = np.random.uniform(3000, 5000)
+        y0_val = np.random.uniform(3800, 4100)
+        x0_val = np.random.uniform(3500, 4500)
         # y0_val = np.random.uniform(0, 7000)
         # x0_val = np.random.uniform(3000, 7000)
         theta0_val = np.random.uniform(-3.1415, 3.1415)
@@ -65,7 +65,7 @@ def init_particles_freespace(num_particles, occupancy_map):
             X_bar_init[i, :] = np.array([x0_val, y0_val, theta0_val, w0_val])
             i += 1
 
-    X_bar_init[num_particles,:] = np.array([4000,4000,3.14,w0_val])
+    # X_bar_init[num_particles,:] = np.array([4000,4000,3.14,w0_val])
     return X_bar_init
 
 def visualize_odometry(odom):
@@ -185,6 +185,7 @@ def main(mode):
                 #w_t = 1/num_particles
                 X_bar_new[m,:] = np.hstack((x_t1, w_t))
                 sensor_flag = 'L'
+                
             else:
                 X_bar_new[m,:] = np.hstack((x_t1, X_bar[m,3]))
                 sensor_flag = 'O'
@@ -194,8 +195,9 @@ def main(mode):
         """
         RESAMPLING
         """
-        X_bar = resampler.low_variance_sampler(X_bar_new)
-        #X_bar = X_bar_new
+        if sensor_flag == 'L':
+            X_bar_new = resampler.low_variance_sampler(X_bar_new)
+        X_bar = X_bar_new
         # print sensor_flag,X_bar
         if vis_flag:
             visualize_timestep(X_bar, time_idx)
