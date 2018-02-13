@@ -146,7 +146,7 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles = 10000
+    num_particles = 2000
     # print occupancy_map
     X_bar= init_particles_freespace(num_particles, occupancy_map)
     # X_bar_2 = init_particles_freespace_2(500, occupancy_map)
@@ -213,7 +213,7 @@ def main(mode):
                 # print w_t
                 X_bar_new[m,:] = np.hstack((x_t1, w_t))
                 sensor_flag = 'L'
-                
+
             else:
                 X_bar_new[m,:] = np.hstack((x_t1, X_bar[m,3]))
                 sensor_flag = 'O'
