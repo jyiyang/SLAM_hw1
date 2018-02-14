@@ -23,10 +23,10 @@ class SensorModel:
 
     def __init__(self, occupancy_map):
 
-        self._sigma_hit = 80
-        self._lambda_short = 0.002
+        self._sigma_hit = 50
+        self._lambda_short = 0.008
         self._z_max = 8183;
-        self._weight = [80,5,0.1,6500]
+        self._weight = [60,4,0.1,6500]
         self._map = occupancy_map
 
         size = np.shape(occupancy_map)
@@ -261,9 +261,9 @@ class SensorModel:
 
         px_occu = math.ceil(x_t1[0]/10.0)
         py_occu = math.ceil(x_t1[1]/10.0)
-        if self._map[py_occu,px_occu]>0.3:
+        if self._map[py_occu,px_occu]>0:
             return 0,[],[]
-        for i in xrange(1,181,10):
+        for i in xrange(1,181,5):
             z_t1 = z_t1_arr[i-1]
             z_k_opt,hit,x_ray,y_ray = self.ray_casting_badgalzizi(x_t1,i)
             #z_k_opt = self.get_range_from_table(x_t1,i-1)
@@ -435,7 +435,7 @@ if __name__=='__main__':
     # src_path_map = '../data/map/wean.dat'
     # src_path_log = '../data/log/robotdata1.log'
     # map_obj = MapReader(src_path_map)
-    #
+    
     # occupancy_map = map_obj.get_map()
     # sensor_model = SensorModel(occupancy_map)
     # logfile = open(src_path_log, 'r')
@@ -447,9 +447,9 @@ if __name__=='__main__':
     #          odometry_laser = meas_vals[3:6] # [x, y, theta] coordinates of laser in odometry frame
     #          ranges = meas_vals[6:-1]
     #          z_t = ranges
-    #
-    #          x = np.array([4150,3950,3.14])
-    #
+    
+    #          x = np.array([4160,4020,3.14])
+    
     #          gtx = []
     #          gty = []
     #          for j in xrange(1,181,5):
@@ -458,7 +458,7 @@ if __name__=='__main__':
     #             ep = sensor_model.get_endpoints(x,ranges[j],j)
     #             gtx.append(ep[0]/10)
     #             gty.append(ep[1]/10)
-    #
+    
     #          w_t,x_l,y_l = sensor_model.beam_range_finder_model(z_t,x)
     #          print w_t
     #          fig = plt.figure()

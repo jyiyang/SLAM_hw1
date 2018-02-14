@@ -48,8 +48,8 @@ def init_particles_freespace(num_particles, occupancy_map):
 
     # initialize [x, y, theta] positions in world_frame for all particles
     # (in free space areas of the map)
-    w0_val = 1.0 / (num_particles)
-    X_bar_init = np.zeros([num_particles, 4])
+    w0_val = 1.0 / (num_particles+1)
+    X_bar_init = np.zeros([num_particles+1, 4])
 
     i = 0
     while i < num_particles:
@@ -65,6 +65,7 @@ def init_particles_freespace(num_particles, occupancy_map):
             X_bar_init[i, :] = np.array([x0_val, y0_val, theta0_val, w0_val])
             i += 1
 
+    X_bar_init[num_particles,:] = np.array([4180,4030,3.1415,w0_val])
     return X_bar_init
 
 
@@ -77,8 +78,8 @@ def init_particles_freespace_2(num_particles, occupancy_map):
 
     i = 0
     while i < num_particles:
-        y0_val = np.random.uniform(3500, 4500)
-        x0_val = np.random.uniform(3500, 4500)
+        y0_val = np.random.uniform(3900, 4100)
+        x0_val = np.random.uniform(3900, 4100)
         # y0_val = np.random.uniform(0, 7000)
         # x0_val = np.random.uniform(3000, 7000)
         theta0_val = np.random.uniform(-3.1415, 3.1415)
@@ -129,7 +130,7 @@ def main(mode):
     x_l = []
     y_l = []
     src_path_map = '../data/map/wean.dat'
-    src_path_log = '../data/log/robotdata1.log'
+    src_path_log = '../data/log/robotdata5.log'
 
     map_obj = MapReader(src_path_map)
     occupancy_map = map_obj.get_map()
@@ -146,14 +147,14 @@ def main(mode):
 
     resampler = Resampling()
 
-    num_particles = 5000
+    num_particles = 4000
     # print occupancy_map
-    X_bar= init_particles_freespace(num_particles, occupancy_map)
-    # X_bar_2 = init_particles_freespace_2(500, occupancy_map)
-    # num_particles = 10500
-    # X_bar = np.zeros([num_particles,4])
-    # X_bar[0:10000,:] = X_bar_1
-    # X_bar[10000:10500,:] = X_bar_2
+    X_bar_1= init_particles_freespace(num_particles, occupancy_map)
+    X_bar_2 = init_particles_freespace_2(500, occupancy_map)
+    num_particles = 4501
+    X_bar = np.zeros([num_particles,4])
+    X_bar[0:4001,:] = X_bar_1
+    X_bar[4001:4501,:] = X_bar_2
     vis_flag = 1
     odom = np.zeros((2218, 2))
     """
