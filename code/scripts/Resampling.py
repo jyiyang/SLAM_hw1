@@ -1,7 +1,8 @@
 import numpy as np
 import pdb
 import math
-
+from matplotlib import pyplot as plt
+from matplotlib import figure as fig
 from MapReader import MapReader
 
 class Resampling:
@@ -15,6 +16,7 @@ class Resampling:
         """
         TODO : Initialize resampling process parameters here
         """
+        self.flag = 0
 
     def multinomial_sampler(self, X_bar):
 
@@ -22,6 +24,7 @@ class Resampling:
         param[in] X_bar : [num_particles x 4] sized array containing [x, y, theta, wt] values for all particles
         param[out] X_bar_resampled : [num_particles x 4] sized array containing [x, y, theta, wt] values for resampled set of particles
         """
+
         self.normalize(X_bar)
         num_particles = np.shape(X_bar)[0]
         X_bar_resampled = np.zeros([num_particles, 4])
@@ -37,8 +40,8 @@ class Resampling:
         param[in] X_bar : [num_particles x 4] sized array containing [x, y, theta, wt] values for all particles
         param[out] X_bar_resampled : [num_particles x 4] sized array containing [x, y, theta, wt] values for resampled set of particles
         """
+        # if math.fabs(np.sum(X_bar[:,3])-1) > 0.1:
         self.normalize(X_bar)
-
         num_particles = np.shape(X_bar)[0]
         X_bar_resampled = np.zeros([num_particles, 4])
 
@@ -46,20 +49,54 @@ class Resampling:
         c = X_bar[0, 3]
 
         i = 0
-        for m in xrange(num_particles):
+        for m in xrange(1,num_particles+1):
+
             U = r + (m - 1) * (1.0/num_particles)
             while U > c:
                 i += 1
                 c += X_bar[i, 3]
-            X_bar_resampled[m, :] = X_bar[i, :]
+            X_bar_resampled[m-1, :] = X_bar[i, :]
 
         return X_bar_resampled
 
     def normalize(self, X_bar):
+        norm_min = np.amin(X_bar[:,3])
+        norm_max = np.amax(X_bar[:,3])
         normalized_factor = np.sum(X_bar[:, 3])
         num_particles = np.shape(X_bar)[0]
+        w = np.array(X_bar[:,3])
         for i in xrange(num_particles):
-            X_bar[i, 3] = X_bar[i, 3] / normalized_factor
+           X_bar[i,3] = X_bar[i, 3] / normalized_factor
+        # if not norm_max > norm_min:
+        #     for i in xrange(num_particles):
+        #         X_bar[i,3] = X_bar[i, 3] / normalized_factor
+        # else:
+        #     for i in xrange(num_particles):
+        #         X_bar[i,3] = (X_bar[i,3]-norm_min)/float(norm_max-norm_min)
+        # normalized_factor = np.sum(X_bar[:, 3])
+        # for i in xrange(num_particles):
+        #    X_bar[i,3] = X_bar[i, 3] / normalized_factor
+        # #
+        if self.flag==1:
+        
+            fig,axes = plt.subplots(nrows=2, ncols=1)
+            ax0,ax1 = axes.flatten()
+            ax0.hist(w)
+            ax1.hist(X_bar[:,3])
+            plt.show()
+
+        # Test softmax
+        # num_particles = np.shape(X_bar)[0]
+        # tmp = []
+        # for i in xrange(num_particles):
+        #     tmp.append(X_bar[i,3])
+        # tmp_exp = [math.exp(i) for i in tmp]
+        # sumtmp = sum(tmp_exp)
+        # for i in xrange(num_particles):
+        #     X_bar[i,3] = math.exp(X_bar[i,3])/sumtmp
+        # return X_bar
+
+
 
 def init_particles_freespace(num_particles, occupancy_map):
 

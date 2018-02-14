@@ -14,10 +14,10 @@ class MotionModel:
         """
         TODO : Initialize Motion Model parameters here
         """
-        self.alpha1 = 1
-        self.alpha2 = 1
-        self.alpha3 = 1
-        self.alpha4 = 1
+        self.alpha1 = 0.001
+        self.alpha2 = 0.001
+        self.alpha3 = 0.001
+        self.alpha4 = 0.001
 
         # self.alpha1 = 0
         # self.alpha2 = 0
@@ -36,6 +36,7 @@ class MotionModel:
         delta_rot1 = math.atan2(u_t1[1] - u_t0[1], u_t1[0] - u_t0[0]) - u_t0[2]
         delta_trans = math.sqrt(math.pow(u_t0[0] - u_t1[0], 2) + math.pow(u_t0[1] - u_t1[1], 2))
         delta_rot2 = u_t1[2] - u_t0[2] - delta_rot1
+        delta_rot2 = (delta_rot2 + math.pi) % (2*math.pi) - math.pi
 
         noise_var_rot1 = self.alpha1 * math.fabs(delta_rot1) + self.alpha2 * delta_trans
         noise_var_trans = self.alpha3 * delta_trans + self.alpha4 * (math.fabs(delta_rot1) + math.fabs(delta_rot2))
@@ -48,6 +49,7 @@ class MotionModel:
         x_prime = x_t0[0] + delta_trans_hat * math.cos(x_t0[2] + delta_rot1_hat)
         y_prime = x_t0[1] + delta_trans_hat * math.sin(x_t0[2] + delta_rot1_hat)
         theta_prime = x_t0[2] + delta_rot1_hat + delta_rot2_hat
+        theta_prime = (theta_prime + math.pi) %(2*math.pi) - math.pi
 
         x_t1 = [x_prime, y_prime, theta_prime]
         return x_t1
